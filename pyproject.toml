@@ -1,0 +1,7 @@
+[project]
+name = "nextgame"
+version = "0.1.0"
+description = "a local-first CLI that recommends what to play tonight from your board game library, based on player/time constraints, preferred genres/mechanics, and recent plays."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
