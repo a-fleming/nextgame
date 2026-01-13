@@ -8,3 +8,12 @@ def init_db(db_path: Path, schema_path: Path) -> None:
 
         schema_sql = schema_path.read_text(encoding="utf-8")
         conn.executescript(schema_sql)
+
+def main():
+    db_path = Path("test.db")
+    schema_path = Path("schema.sql")
+    init_db(db_path, schema_path)
+
+if __name__ == "__main__":
+    main()
+    
