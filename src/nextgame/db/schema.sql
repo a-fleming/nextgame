@@ -28,6 +28,6 @@ CREATE TABLE IF NOT EXISTS sessions (
     game_id INTEGER NOT NULL,
     player_count INTEGER NOT NULL CHECK (player_count >= 1),
     duration_minutes INTEGER NOT NULL CHECK (duration_minutes > 0),
-    played_at TEXT NOT NULL DEFAULT (datetime('now')),
+    played_at TEXT NOT NULL DEFAULT (DATE('now')),
     FOREIGN KEY (game_id) REFERENCES games(id)
 );
