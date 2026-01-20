@@ -42,6 +42,24 @@ def build_parser() -> argparse.ArgumentParser:
     log_list = log_actions.add_parser("list", help="list all sessions")
     log_list.set_defaults(func=cmd_log_list)
 
+    # Define parser for RECOMMEND
+    recommend_parser = area_parsers.add_parser("recommend", help="recommend \
+                                               games to play based on \
+                                               specified criteria")
+    recommend_parser.add_argument("--players", required=True, type=int, 
+                                  help="number of players")
+    recommend_parser.add_argument("--time", type=int, help="ideal play \
+                                  time (minutes)")
+    recommend_parser.add_argument("--weight", type=float, help="ideal \
+                                  complexity rating (1.0 to 5.0)")
+    recommend_parser.add_argument("--include-tag", type=str, action="append",
+                                  help="name of tag (use --include-tag TAG \
+                                    for each tag)")
+    recommend_parser.add_argument("--exclude-tag", type=str, action="append",
+                                  help="name of tag (use --exclude-tag TAG \
+                                    for each tag)")
+    recommend_parser.set_defaults(func=cmd_recommend)
+
     # Define parsers for TAG area
     tag_parser = area_parsers.add_parser("tag", help="operations on tags")
     tag_actions = tag_parser.add_subparsers(dest="action", required=True)
@@ -87,6 +105,14 @@ def cmd_log_delete(args):
 
 def cmd_log_list(args):
     print("cmd_log_list()")
+
+def cmd_recommend(args):
+    print("cmd_recommend()")
+    print(f"players: {args.players}")
+    print(f"time: {args.time}")
+    print(f"weight: {args.weight}")
+    print(f"include_tag(s): {args.include_tag}")
+    print(f"exclude_tag(s): {args.exclude_tag}")
 
 def cmd_tag_add(args):
     print("cmd_tag_add()")
