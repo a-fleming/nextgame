@@ -66,10 +66,12 @@ def cmd_tag_game(args):
 def cmd_tag_list(args):
     print("cmd_tag_list()")
 
-def main():
+def main(argv=None) -> int:
     parser = build_parser()
     args = parser.parse_args()
     args.func(args)
+    
+    return 0
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
