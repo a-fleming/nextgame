@@ -2,12 +2,16 @@ import argparse
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="nextgame")
-    area_parsers = parser.add_subparsers(dest="area", required=True)
+    area_parsers = parser.add_subparsers(
+        dest="area",
+        required=True
+    )
     
     # Define parser for DEMO
-    demo_parser = area_parsers.add_parser("demo", help="create a demo \
-                                          database seeded with games, \
-                                          tags, and sessions")
+    demo_parser = area_parsers.add_parser(
+        "demo",
+        help="Create a demo database seeded with games, tags, and sessions"
+    )
     demo_parser.set_defaults(func=cmd_demo)
 
     # Define parsers for GAME area
@@ -167,76 +171,161 @@ def build_parser() -> argparse.ArgumentParser:
     
 
     # Define parser for INIT area
-    init_parser = area_parsers.add_parser("init", help="initialize nextgame \
-                                          database")
-    init_parser.add_argument("--db-path", default="nextgame.db", help="path \
-                             to database file to use or create (default: \
-                             %(default)s)")
+    init_parser = area_parsers.add_parser(
+        "init",
+        help="Initialize nextgame database"
+    )
+    init_parser.add_argument(
+        "--db-path",
+        default="nextgame.db",
+        help="Path to database file to use or create (default: %(default)s)"
+    )
     init_parser.set_defaults(func=cmd_init)
 
     # Define parsers for LOG area
-    log_parser = area_parsers.add_parser("log", help="operations on game \
-                                         sessions")
-    log_actions = log_parser.add_subparsers(dest="action", required=True)
-    log_add = log_actions.add_parser("add", help="add a session to the \
-                                     database")
-    log_add.add_argument("--game", help="name of the game", required=True)
-    log_add.add_argument("--date", required=True, type=str, help="date the \
-                         game was played (YYYY-MM-DD)")
-    log_add.add_argument("--players", required=True, type=int, help="number\
-                          of players")
-    log_add.add_argument("--time", required=True, type=int, help="duration \
-                         of the game (minutes)")
+    log_parser = area_parsers.add_parser(
+        "log",
+        help="Operations on game sessions"
+    )
+    log_actions = log_parser.add_subparsers(
+        dest="action", 
+        required=True
+    )
+    log_add = log_actions.add_parser(
+        "add",
+        help="Add a session to the database"
+    )
+    log_add.add_argument(
+        "--game",
+        required=True,
+        help="Name of the game"
+    )
+    log_add.add_argument(
+        "--date",
+        required=True,
+        type=str,
+        help="Date the game was played (YYYY-MM-DD)"
+    )
+    log_add.add_argument(
+        "--players",
+        required=True,
+        type=int,
+        help="Number of players"
+    )
+    log_add.add_argument(
+        "--time",
+        required=True,
+        type=int,
+        help="Play time in minutes"
+    )
     log_add.set_defaults(func=cmd_log_add)
 
-    log_delete = log_actions.add_parser("delete", help="delete a session \
-                                        from the log")
-    log_delete.add_argument("--id", required=True, type=int, help="id of \
-                             session")
+    log_delete = log_actions.add_parser(
+        "delete",
+        help="Delete a session from the log"
+    )
+    log_delete.add_argument(
+        "--id",
+        required=True,
+        type=int,
+        help="ID of session"
+    )
     log_delete.set_defaults(func=cmd_log_delete)
 
-    log_list = log_actions.add_parser("list", help="list all sessions")
+    log_list = log_actions.add_parser(
+        "list",
+        help="List all sessions"
+    )
     log_list.set_defaults(func=cmd_log_list)
 
     # Define parser for RECOMMEND
-    recommend_parser = area_parsers.add_parser("recommend", help="recommend \
-                                               games to play based on \
-                                               specified criteria")
-    recommend_parser.add_argument("--players", required=True, type=int, 
-                                  help="number of players")
-    recommend_parser.add_argument("--time", type=int, help="ideal play \
-                                  time (minutes)")
-    recommend_parser.add_argument("--weight", type=float, help="ideal \
-                                  complexity rating (1.0 to 5.0)")
-    recommend_parser.add_argument("--include-tag", type=str, action="append",
-                                  help="name of tag (use --include-tag TAG \
-                                    for each tag)")
-    recommend_parser.add_argument("--exclude-tag", type=str, action="append",
-                                  help="name of tag (use --exclude-tag TAG \
-                                    for each tag)")
+    recommend_parser = area_parsers.add_parser(
+        "recommend",
+        help="Recommend games to play based on specified criteria"
+    )
+    recommend_parser.add_argument(
+        "--players",
+        required=True,
+        type=int,
+        help="Number of players"
+    )
+    recommend_parser.add_argument(
+        "--time",
+        type=int,
+        help="Ideal play time (minutes)"
+    )
+    recommend_parser.add_argument(
+        "--weight",
+        type=float,
+        help="Ideal complexity rating (1.0 to 5.0)"
+    )
+    recommend_parser.add_argument(
+        "--include-tag",
+        type=str,
+        action="append",
+        help="Name of tag (use --include-tag TAG for each tag)"
+    )
+    recommend_parser.add_argument(
+        "--exclude-tag",
+        type=str,
+        action="append",
+        help="Name of tag (use --exclude-tag TAG for each tag)"
+    )
     recommend_parser.set_defaults(func=cmd_recommend)
 
     # Define parsers for TAG area
-    tag_parser = area_parsers.add_parser("tag", help="operations on tags")
-    tag_actions = tag_parser.add_subparsers(dest="action", required=True)
+    tag_parser = area_parsers.add_parser(
+        "tag",
+        help="Operations on tags"
+    )
+    tag_actions = tag_parser.add_subparsers(
+        dest="action",
+        required=True
+    )
     
-    tag_add = tag_actions.add_parser("add", help="add a tag to the database")
-    tag_add.add_argument("--tag", required=True, help="name of tag")
+    tag_add = tag_actions.add_parser(
+        "add",
+        help="Add a tag to the database"
+    )
+    tag_add.add_argument(
+        "--tag",
+        required=True,
+        help="Name of tag"
+    )
     tag_add.set_defaults(func=cmd_tag_add)
 
-    tag_delete = tag_actions.add_parser("delete", help="delete a tag from \
-                                        the database")
-    tag_delete.add_argument("--tag", required=True, help="name of tag")
+    tag_delete = tag_actions.add_parser(
+        "delete",
+        help="Delete a tag from the database"
+    )
+    tag_delete.add_argument(
+        "--tag",
+        required=True,
+        help="Name of tag"
+    )
     tag_delete.set_defaults(func=cmd_tag_delete)
     
-    tag_game = tag_actions.add_parser("game", help="apply one or more tags \
-                                      to a game")
-    tag_game.add_argument("--game", required=True, help="name of game")
-    tag_game.add_argument("--tag", required=True, action="append",
-                          help="name of tag (use --tag TAG for each tag)")
+    tag_game = tag_actions.add_parser(
+        "game",
+        help="Apply one or more tags to a game"
+    )
+    tag_game.add_argument(
+        "--game",
+        required=True,
+        help="Name of game"
+    )
+    tag_game.add_argument(
+        "--tag",
+        required=True,
+        action="append",
+        help="Name of tag (use --tag TAG for each tag)"
+    )
     tag_game.set_defaults(func=cmd_tag_game)
 
-    tag_list = tag_actions.add_parser("list", help="list all tags")
+    tag_list = tag_actions.add_parser(
+        "list",
+        help="List all tags"
+    )
     tag_list.set_defaults(func=cmd_tag_list)
 
     return parser
