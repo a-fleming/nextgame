@@ -196,15 +196,17 @@ def build_parser() -> argparse.ArgumentParser:
         help="Add a session to the database"
     )
     log_add.add_argument(
-        "--game",
-        required=True,
+        "game",
+        type=str,
+        metavar="GAME",
         help="Name of the game"
     )
     log_add.add_argument(
         "--date",
         required=True,
         type=str,
-        help="Date the game was played (YYYY-MM-DD)"
+        metavar="YYYY-MM-DD",
+        help="Date the game was played"
     )
     log_add.add_argument(
         "--players",
@@ -216,18 +218,19 @@ def build_parser() -> argparse.ArgumentParser:
         "--time",
         required=True,
         type=int,
+        metavar="MINUTES",
         help="Play time in minutes"
     )
     log_add.set_defaults(func=cmd_log_add)
 
     log_delete = log_actions.add_parser(
         "delete",
-        help="Delete a session from the log"
+        help="Delete a session from the database"
     )
     log_delete.add_argument(
-        "--id",
-        required=True,
+        "id",
         type=int,
+        metavar="ID",
         help="ID of session"
     )
     log_delete.set_defaults(func=cmd_log_delete)
@@ -244,32 +247,35 @@ def build_parser() -> argparse.ArgumentParser:
         help="Recommend games to play based on specified criteria"
     )
     recommend_parser.add_argument(
-        "--players",
-        required=True,
+        "players",
         type=int,
+        metavar="PLAYERS",
         help="Number of players"
     )
     recommend_parser.add_argument(
         "--time",
         type=int,
-        help="Ideal play time (minutes)"
+        metavar="MINUTES",
+        help="Ideal play time in minutes"
     )
     recommend_parser.add_argument(
         "--weight",
         type=float,
-        help="Ideal complexity rating (1.0 to 5.0)"
+        help="Ideal complexity rating on a scale from 1.0 to 5.0"
     )
     recommend_parser.add_argument(
-        "--include-tag",
+        "--include-tags",
         type=str,
-        action="append",
-        help="Name of tag (use --include-tag TAG for each tag)"
+        nargs="+",
+        metavar="TAG",
+        help="Name of tags to include"
     )
     recommend_parser.add_argument(
-        "--exclude-tag",
+        "--exclude-tags",
         type=str,
-        action="append",
-        help="Name of tag (use --exclude-tag TAG for each tag)"
+        nargs="+",
+        metavar="TAG",
+        help="Name of tags to exclude"
     )
     recommend_parser.set_defaults(func=cmd_recommend)
 
@@ -285,23 +291,27 @@ def build_parser() -> argparse.ArgumentParser:
     
     tag_add = tag_actions.add_parser(
         "add",
-        help="Add a tag to the database"
+        help="Add tags to the database"
     )
     tag_add.add_argument(
-        "--tag",
-        required=True,
-        help="Name of tag"
+        "tags",
+        type=str,
+        nargs="+",
+        metavar="TAG",
+        help="Names of tags to add"
     )
     tag_add.set_defaults(func=cmd_tag_add)
 
     tag_delete = tag_actions.add_parser(
         "delete",
-        help="Delete a tag from the database"
+        help="Delete tags from the database"
     )
     tag_delete.add_argument(
-        "--tag",
-        required=True,
-        help="Name of tag"
+        "tags",
+        type=str,
+        nargs="+",
+        metavar="TAG",
+        help="Names of tags to delete"
     )
     tag_delete.set_defaults(func=cmd_tag_delete)
 
@@ -381,16 +391,16 @@ def cmd_recommend(args):
     print(f"players: {args.players}")
     print(f"time: {args.time}")
     print(f"weight: {args.weight}")
-    print(f"include_tag(s): {args.include_tag}")
-    print(f"exclude_tag(s): {args.exclude_tag}")
+    print(f"include_tags: {args.include_tags}")
+    print(f"exclude_tags: {args.exclude_tags}")
 
 def cmd_tag_add(args):
     print("cmd_tag_add()")
-    print(f"tag: {args.tag}")
+    print(f"tags: {args.tags}")
 
 def cmd_tag_delete(args):
     print("cmd_tag_delete()")
-    print(f"tag: {args.tag}")
+    print(f"tags: {args.tags}")
 
 def cmd_tag_list(args):
     print("cmd_tag_list()")
