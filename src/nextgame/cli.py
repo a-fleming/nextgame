@@ -6,15 +6,22 @@ def build_parser() -> argparse.ArgumentParser:
         dest="area",
         required=True
     )
-    
-    # Define parser for DEMO
+    add_demo_area(area_parsers)
+    add_game_area(area_parsers)
+    add_init_area(area_parsers)
+    add_log_area(area_parsers)
+    add_recommend_area(area_parsers)
+    add_tag_area(area_parsers)
+    return parser
+
+def add_demo_area(area_parsers):
     demo_parser = area_parsers.add_parser(
         "demo",
         help="Create a demo database seeded with games, tags, and sessions"
     )
     demo_parser.set_defaults(func=cmd_demo)
 
-    # Define parsers for GAME area
+def add_game_area(area_parsers):
     game_parser = area_parsers.add_parser(
         "game",
         help="Operations on games"
@@ -169,8 +176,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     game_tag_remove.set_defaults(func=cmd_game_tag_remove)
     
-
-    # Define parser for INIT area
+def add_init_area(area_parsers):
     init_parser = area_parsers.add_parser(
         "init",
         help="Initialize nextgame database"
@@ -182,7 +188,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     init_parser.set_defaults(func=cmd_init)
 
-    # Define parsers for LOG area
+def add_log_area(area_parsers):
     log_parser = area_parsers.add_parser(
         "log",
         help="Operations on game sessions"
@@ -230,7 +236,7 @@ def build_parser() -> argparse.ArgumentParser:
     log_delete.add_argument(
         "id",
         type=int,
-        metavar="ID",
+        metavar="SESSION_ID",
         help="ID of session"
     )
     log_delete.set_defaults(func=cmd_log_delete)
@@ -241,7 +247,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     log_list.set_defaults(func=cmd_log_list)
 
-    # Define parser for RECOMMEND
+def add_recommend_area(area_parsers):
     recommend_parser = area_parsers.add_parser(
         "recommend",
         help="Recommend games to play based on specified criteria"
@@ -279,7 +285,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     recommend_parser.set_defaults(func=cmd_recommend)
 
-    # Define parsers for TAG area
+def add_tag_area(area_parsers):
     tag_parser = area_parsers.add_parser(
         "tag",
         help="Operations on tags"
@@ -321,8 +327,6 @@ def build_parser() -> argparse.ArgumentParser:
     )
     tag_list.set_defaults(func=cmd_tag_list)
 
-    return parser
-
 def cmd_demo(args):
     print("cmd_demo()")
 
@@ -349,7 +353,7 @@ def cmd_game_search(args):
     exclude = set(args.exclude_tags or [])
     conflicts = include & exclude
     if conflicts:
-        raise ValueError(f"Tags cannot be both included and excluded: {", ".join(conflicts)}")
+        raise ValueError(f"Tags cannot be both included and excluded: {', '.join(conflicts)}")
     
     print("cmd_game_search()")
     print(f"players: {args.players}")
