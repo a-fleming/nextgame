@@ -304,23 +304,6 @@ def build_parser() -> argparse.ArgumentParser:
         help="Name of tag"
     )
     tag_delete.set_defaults(func=cmd_tag_delete)
-    
-    tag_game = tag_actions.add_parser(
-        "game",
-        help="Apply one or more tags to a game"
-    )
-    tag_game.add_argument(
-        "--game",
-        required=True,
-        help="Name of game"
-    )
-    tag_game.add_argument(
-        "--tag",
-        required=True,
-        action="append",
-        help="Name of tag (use --tag TAG for each tag)"
-    )
-    tag_game.set_defaults(func=cmd_tag_game)
 
     tag_list = tag_actions.add_parser(
         "list",
@@ -408,11 +391,6 @@ def cmd_tag_add(args):
 def cmd_tag_delete(args):
     print("cmd_tag_delete()")
     print(f"tag: {args.tag}")
-
-def cmd_tag_game(args):
-    print("cmd_tag_game()")
-    print(f"game: {args.game}")
-    print(f"tag(s): {args.tag}")
 
 def cmd_tag_list(args):
     print("cmd_tag_list()")
