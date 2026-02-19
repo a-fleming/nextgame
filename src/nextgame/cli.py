@@ -26,7 +26,7 @@ def add_demo_area(area_parsers, parents=None):
         parents=parents or [],
         help="Create a demo database seeded with games, tags, and sessions"
     )
-    demo_parser.set_defaults(func=cmd_demo)
+    demo_parser.set_defaults(func=cmd_demo, parser=demo_parser)
 
 def add_game_area(area_parsers, parents=None):
     game_parser = area_parsers.add_parser(
@@ -73,7 +73,7 @@ def add_game_area(area_parsers, parents=None):
         type=float,
         help="Complexity rating on a scale from 1.0 to 5.0"
     )
-    game_add.set_defaults(func=cmd_game_add)
+    game_add.set_defaults(func=cmd_game_add, parser=game_add)
 
     game_delete = game_actions.add_parser(
         "delete",
@@ -94,7 +94,7 @@ def add_game_area(area_parsers, parents=None):
         metavar="GAME",
         help="Exact name of the game to delete"
     )
-    game_delete.set_defaults(func=cmd_game_delete)
+    game_delete.set_defaults(func=cmd_game_delete, parser=game_delete)
 
     game_list = game_actions.add_parser(
         "list",
@@ -106,7 +106,7 @@ def add_game_area(area_parsers, parents=None):
         action="store_true",
         help="List tags for each game",
     )
-    game_list.set_defaults(func=cmd_game_list)
+    game_list.set_defaults(func=cmd_game_list, parser=game_list)
 
     game_search = game_actions.add_parser(
         "search",
@@ -142,7 +142,7 @@ def add_game_area(area_parsers, parents=None):
         type=float,
         help="Complexity rating on a scale from 1.0 to 5.0"
     )
-    game_search.set_defaults(func=cmd_game_search)
+    game_search.set_defaults(func=cmd_game_search, parser=game_search)
     
     # Define parsers for GAME TAG sub-area
     game_tag_parser = game_actions.add_parser(
@@ -171,7 +171,7 @@ def add_game_area(area_parsers, parents=None):
         metavar="TAG",
         help="Tags to assign to the game"
     )
-    game_tag_add.set_defaults(func=cmd_game_tag_add)
+    game_tag_add.set_defaults(func=cmd_game_tag_add, parser=game_tag_add)
 
     game_tag_remove = game_tag_actions.add_parser(
         "remove",
@@ -189,7 +189,7 @@ def add_game_area(area_parsers, parents=None):
         metavar="TAG",
         help="Tags to remove from the game"
     )
-    game_tag_remove.set_defaults(func=cmd_game_tag_remove)
+    game_tag_remove.set_defaults(func=cmd_game_tag_remove, parser=game_tag_remove)
     
 def add_init_area(area_parsers, parents=None):
     init_parser = area_parsers.add_parser(
@@ -197,7 +197,7 @@ def add_init_area(area_parsers, parents=None):
         parents=parents or [],
         help="Initialize nextgame database"
     )
-    init_parser.set_defaults(func=cmd_init)
+    init_parser.set_defaults(func=cmd_init, parser=init_parser)
 
 def add_log_area(area_parsers, parents=None):
     log_parser = area_parsers.add_parser(
@@ -240,7 +240,7 @@ def add_log_area(area_parsers, parents=None):
         metavar="MINUTES",
         help="Play time in minutes"
     )
-    log_add.set_defaults(func=cmd_log_add)
+    log_add.set_defaults(func=cmd_log_add, parser=log_add)
 
     log_delete = log_actions.add_parser(
         "delete",
@@ -253,14 +253,14 @@ def add_log_area(area_parsers, parents=None):
         metavar="SESSION_ID",
         help="ID of session"
     )
-    log_delete.set_defaults(func=cmd_log_delete)
+    log_delete.set_defaults(func=cmd_log_delete, parser=log_delete)
 
     log_list = log_actions.add_parser(
         "list",
         parents=parents or [],
         help="List all sessions"
     )
-    log_list.set_defaults(func=cmd_log_list)
+    log_list.set_defaults(func=cmd_log_list, parser=log_list)
 
 def add_recommend_area(area_parsers, parents=None):
     recommend_parser = area_parsers.add_parser(
@@ -299,7 +299,7 @@ def add_recommend_area(area_parsers, parents=None):
         metavar="TAG",
         help="Name of tags to exclude"
     )
-    recommend_parser.set_defaults(func=cmd_recommend)
+    recommend_parser.set_defaults(func=cmd_recommend, parser=recommend_parser)
 
 def add_tag_area(area_parsers, parents=None):
     tag_parser = area_parsers.add_parser(
@@ -324,7 +324,7 @@ def add_tag_area(area_parsers, parents=None):
         metavar="TAG",
         help="Names of tags to add"
     )
-    tag_add.set_defaults(func=cmd_tag_add)
+    tag_add.set_defaults(func=cmd_tag_add, parser=tag_add)
 
     tag_delete = tag_actions.add_parser(
         "delete",
@@ -338,14 +338,14 @@ def add_tag_area(area_parsers, parents=None):
         metavar="TAG",
         help="Names of tags to delete"
     )
-    tag_delete.set_defaults(func=cmd_tag_delete)
+    tag_delete.set_defaults(func=cmd_tag_delete, parser=tag_delete)
 
     tag_list = tag_actions.add_parser(
         "list",
         parents=parents or [],
         help="List all tags"
     )
-    tag_list.set_defaults(func=cmd_tag_list)
+    tag_list.set_defaults(func=cmd_tag_list, parser=tag_list)
 
 def cmd_demo(args):
     print("cmd_demo()")
@@ -371,14 +371,8 @@ def cmd_game_list(args):
     print(f"with_tags: {args.with_tags}")
     print(f"db_path: {args.db_path}")
     
-def cmd_game_search(args):    
-    # prevent same tag in both include/exclude
-    include = set(args.include_tags or [])
-    exclude = set(args.exclude_tags or [])
-    conflicts = include & exclude
-    if conflicts:
-        raise ValueError(f"Tags cannot be both included and excluded: {', '.join(conflicts)}")
-    
+def cmd_game_search(args):
+    error_if_tag_options_conflict(args)
     print("cmd_game_search()")
     print(f"players: {args.players}")
     print(f"time: {args.time}")
@@ -421,6 +415,7 @@ def cmd_log_list(args):
     print(f"db_path: {args.db_path}")
 
 def cmd_recommend(args):
+    error_if_tag_options_conflict(args)
     print("cmd_recommend()")
     print(f"players: {args.players}")
     print(f"time: {args.time}")
@@ -442,6 +437,14 @@ def cmd_tag_delete(args):
 def cmd_tag_list(args):
     print("cmd_tag_list()")
     print(f"db_path: {args.db_path}")
+
+def error_if_tag_options_conflict(args):
+    # prevent same tag in both include/exclude
+    include = set(args.include_tags or [])
+    exclude = set(args.exclude_tags or [])
+    conflicts = include & exclude
+    if conflicts:
+        args.parser.error(f"Tags cannot be both included and excluded: {', '.join(sorted(conflicts))}")
 
 def main(argv=None) -> int:
     parser = build_parser()
