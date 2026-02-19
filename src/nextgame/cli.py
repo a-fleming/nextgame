@@ -6,24 +6,32 @@ def build_parser() -> argparse.ArgumentParser:
         dest="area",
         required=True
     )
-    add_demo_area(area_parsers)
-    add_game_area(area_parsers)
-    add_init_area(area_parsers)
-    add_log_area(area_parsers)
-    add_recommend_area(area_parsers)
-    add_tag_area(area_parsers)
+    common = argparse.ArgumentParser(add_help=False)
+    common.add_argument(
+        "--db-path",
+        default="nextgame.db",
+        help="Path to database file to use or create (default: %(default)s)"
+    )
+    add_demo_area(area_parsers, parents=[common])
+    add_game_area(area_parsers, parents=[common])
+    add_init_area(area_parsers, parents=[common])
+    add_log_area(area_parsers, parents=[common])
+    add_recommend_area(area_parsers, parents=[common])
+    add_tag_area(area_parsers, parents=[common])
     return parser
 
-def add_demo_area(area_parsers):
+def add_demo_area(area_parsers, parents=None):
     demo_parser = area_parsers.add_parser(
         "demo",
+        parents=parents or [],
         help="Create a demo database seeded with games, tags, and sessions"
     )
     demo_parser.set_defaults(func=cmd_demo)
 
-def add_game_area(area_parsers):
+def add_game_area(area_parsers, parents=None):
     game_parser = area_parsers.add_parser(
         "game",
+        parents=parents or [],
         help="Operations on games"
     )
     game_actions = game_parser.add_subparsers(
@@ -31,7 +39,8 @@ def add_game_area(area_parsers):
         required=True
     )
     game_add = game_actions.add_parser(
-        "add", 
+        "add",
+        parents=parents or [],
         help="Add a game to the database"
     )
     game_add.add_argument(
@@ -68,6 +77,7 @@ def add_game_area(area_parsers):
 
     game_delete = game_actions.add_parser(
         "delete",
+        parents=parents or [],
         help="Delete a game from the database"
     )
 
@@ -88,6 +98,7 @@ def add_game_area(area_parsers):
 
     game_list = game_actions.add_parser(
         "list",
+        parents=parents or [],
         help="List all games"
     )
     game_list.add_argument(
@@ -99,6 +110,7 @@ def add_game_area(area_parsers):
 
     game_search = game_actions.add_parser(
         "search",
+        parents=parents or [],
         help="Search for games matching specific criteria"
     )
     game_search.add_argument(
@@ -135,6 +147,7 @@ def add_game_area(area_parsers):
     # Define parsers for GAME TAG sub-area
     game_tag_parser = game_actions.add_parser(
         "tag",
+        parents=parents or [],
         help="Add/remove tags"
     )
     game_tag_actions = game_tag_parser.add_subparsers(
@@ -144,6 +157,7 @@ def add_game_area(area_parsers):
     
     game_tag_add = game_tag_actions.add_parser(
         "add",
+        parents=parents or [],
         help="Add tags to a game"
     )
     game_tag_add.add_argument(
@@ -161,6 +175,7 @@ def add_game_area(area_parsers):
 
     game_tag_remove = game_tag_actions.add_parser(
         "remove",
+        parents=parents or [],
         help="Remove tags from a game"
     )
     game_tag_remove.add_argument(
@@ -176,21 +191,18 @@ def add_game_area(area_parsers):
     )
     game_tag_remove.set_defaults(func=cmd_game_tag_remove)
     
-def add_init_area(area_parsers):
+def add_init_area(area_parsers, parents=None):
     init_parser = area_parsers.add_parser(
         "init",
+        parents=parents or [],
         help="Initialize nextgame database"
-    )
-    init_parser.add_argument(
-        "--db-path",
-        default="nextgame.db",
-        help="Path to database file to use or create (default: %(default)s)"
     )
     init_parser.set_defaults(func=cmd_init)
 
-def add_log_area(area_parsers):
+def add_log_area(area_parsers, parents=None):
     log_parser = area_parsers.add_parser(
         "log",
+        parents=parents or [],
         help="Operations on game sessions"
     )
     log_actions = log_parser.add_subparsers(
@@ -199,6 +211,7 @@ def add_log_area(area_parsers):
     )
     log_add = log_actions.add_parser(
         "add",
+        parents=parents or [],
         help="Add a session to the database"
     )
     log_add.add_argument(
@@ -231,6 +244,7 @@ def add_log_area(area_parsers):
 
     log_delete = log_actions.add_parser(
         "delete",
+        parents=parents or [],
         help="Delete a session from the database"
     )
     log_delete.add_argument(
@@ -243,13 +257,15 @@ def add_log_area(area_parsers):
 
     log_list = log_actions.add_parser(
         "list",
+        parents=parents or [],
         help="List all sessions"
     )
     log_list.set_defaults(func=cmd_log_list)
 
-def add_recommend_area(area_parsers):
+def add_recommend_area(area_parsers, parents=None):
     recommend_parser = area_parsers.add_parser(
         "recommend",
+        parents=parents or [],
         help="Recommend games to play based on specified criteria"
     )
     recommend_parser.add_argument(
@@ -285,9 +301,10 @@ def add_recommend_area(area_parsers):
     )
     recommend_parser.set_defaults(func=cmd_recommend)
 
-def add_tag_area(area_parsers):
+def add_tag_area(area_parsers, parents=None):
     tag_parser = area_parsers.add_parser(
         "tag",
+        parents=parents or [],
         help="Operations on tags"
     )
     tag_actions = tag_parser.add_subparsers(
@@ -297,6 +314,7 @@ def add_tag_area(area_parsers):
     
     tag_add = tag_actions.add_parser(
         "add",
+        parents=parents or [],
         help="Add tags to the database"
     )
     tag_add.add_argument(
@@ -310,6 +328,7 @@ def add_tag_area(area_parsers):
 
     tag_delete = tag_actions.add_parser(
         "delete",
+        parents=parents or [],
         help="Delete tags from the database"
     )
     tag_delete.add_argument(
@@ -323,12 +342,14 @@ def add_tag_area(area_parsers):
 
     tag_list = tag_actions.add_parser(
         "list",
+        parents=parents or [],
         help="List all tags"
     )
     tag_list.set_defaults(func=cmd_tag_list)
 
 def cmd_demo(args):
     print("cmd_demo()")
+    print(f"db_path: {args.db_path}")
 
 def cmd_game_add(args):
     print("cmd_game_add()")
@@ -337,15 +358,18 @@ def cmd_game_add(args):
     print(f"time: {args.time}")
     print(f"weight: {args.weight}")
     print(f"tags: {args.tags}")
+    print(f"db_path: {args.db_path}")
 
 def cmd_game_delete(args):
     print("cmd_game_delete()")
     print(f"id: {args.id}")
     print(f"name: {args.name}")
+    print(f"db_path: {args.db_path}")
     
 def cmd_game_list(args):
     print("cmd_game_list()")
     print(f"with_tags: {args.with_tags}")
+    print(f"db_path: {args.db_path}")
     
 def cmd_game_search(args):    
     # prevent same tag in both include/exclude
@@ -361,16 +385,19 @@ def cmd_game_search(args):
     print(f"weight: {args.weight}")
     print(f"include_tags: {args.include_tags}")
     print(f"exclude_tags: {args.exclude_tags}")
+    print(f"db_path: {args.db_path}")
 
 def cmd_game_tag_add(args):
     print("cmd_game_tag_add()")
     print(f"game: {args.game}")
     print(f"tags: {args.tags}")
+    print(f"db_path: {args.db_path}")
 
 def cmd_game_tag_remove(args):
     print("cmd_game_tag_remove()")
     print(f"game: {args.game}")
     print(f"tags: {args.tags}")
+    print(f"db_path: {args.db_path}")
 
 def cmd_init(args):
     print("cmd_init()")
@@ -382,13 +409,16 @@ def cmd_log_add(args):
     print(f"date: {args.date}")
     print(f"players: {args.players}")
     print(f"time: {args.time}")
+    print(f"db_path: {args.db_path}")
 
 def cmd_log_delete(args):
     print("cmd_log_delete()")
     print(f"id: {args.id}")
+    print(f"db_path: {args.db_path}")
 
 def cmd_log_list(args):
     print("cmd_log_list()")
+    print(f"db_path: {args.db_path}")
 
 def cmd_recommend(args):
     print("cmd_recommend()")
@@ -397,17 +427,21 @@ def cmd_recommend(args):
     print(f"weight: {args.weight}")
     print(f"include_tags: {args.include_tags}")
     print(f"exclude_tags: {args.exclude_tags}")
+    print(f"db_path: {args.db_path}")
 
 def cmd_tag_add(args):
     print("cmd_tag_add()")
     print(f"tags: {args.tags}")
+    print(f"db_path: {args.db_path}")
 
 def cmd_tag_delete(args):
     print("cmd_tag_delete()")
     print(f"tags: {args.tags}")
+    print(f"db_path: {args.db_path}")
 
 def cmd_tag_list(args):
     print("cmd_tag_list()")
+    print(f"db_path: {args.db_path}")
 
 def main(argv=None) -> int:
     parser = build_parser()
