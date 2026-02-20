@@ -57,6 +57,7 @@ def add_game_area(area_parsers, parents=None):
     )
     game_add.add_argument(
         "--tags",
+        type=validate_tags,
         nargs="+",
         metavar="TAG",
         help="Tags to assign to the game"
@@ -121,12 +122,14 @@ def add_game_area(area_parsers, parents=None):
     )
     game_search.add_argument(
         "--exclude-tags",
+        type=validate_tags,
         nargs="+",
         metavar="TAG",
         help="Tags the game must not have"
     )
     game_search.add_argument(
         "--include-tags",
+        type=validate_tags,
         nargs="+",
         metavar="TAG",
         help="Tags the game must have"
@@ -167,6 +170,7 @@ def add_game_area(area_parsers, parents=None):
     )
     game_tag_add.add_argument(
         "tags",
+        type=validate_tags,
         nargs="+",
         metavar="TAG",
         help="Tags to assign to the game"
@@ -185,6 +189,7 @@ def add_game_area(area_parsers, parents=None):
     )
     game_tag_remove.add_argument(
         "tags",
+        type=validate_tags,
         nargs="+",
         metavar="TAG",
         help="Tags to remove from the game"
@@ -287,14 +292,14 @@ def add_recommend_area(area_parsers, parents=None):
     )
     recommend_parser.add_argument(
         "--include-tags",
-        type=str,
+        type=validate_tags,
         nargs="+",
         metavar="TAG",
         help="Name of tags to include"
     )
     recommend_parser.add_argument(
         "--exclude-tags",
-        type=str,
+        type=validate_tags,
         nargs="+",
         metavar="TAG",
         help="Name of tags to exclude"
@@ -319,7 +324,7 @@ def add_tag_area(area_parsers, parents=None):
     )
     tag_add.add_argument(
         "tags",
-        type=str,
+        type=validate_tags,
         nargs="+",
         metavar="TAG",
         help="Names of tags to add"
@@ -333,7 +338,7 @@ def add_tag_area(area_parsers, parents=None):
     )
     tag_delete.add_argument(
         "tags",
-        type=str,
+        type=validate_tags,
         nargs="+",
         metavar="TAG",
         help="Names of tags to delete"
@@ -515,6 +520,18 @@ def validate_positive_integer(value):
     except ValueError:
         raise argparse.ArgumentTypeError("must be an integer")
     raise argparse.ArgumentTypeError("must be greater than 0")
+
+def validate_tags(value):
+    # strip leading and trailing whitespace
+    value = value.strip()
+
+    if not value:
+        raise argparse.ArgumentTypeError("tag cannot be empty")
+
+    # collapse internal whitespace
+    value = " ".join(value.split())
+    return value.lower()
+
 
 def main(argv=None) -> int:
     parser = build_parser()
