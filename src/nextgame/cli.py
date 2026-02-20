@@ -1,7 +1,18 @@
 import argparse
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="nextgame")
+    parser = argparse.ArgumentParser(
+        prog="nextgame",
+        epilog="""
+examples:
+  nextgame init --db-path test.db
+  nextgame demo
+  nextgame game add "Catan" --players 3-4 --time 60 --tags "euro game" trading
+  nextgame log add "Catan" --date 2025-11-15 --players 4 --time 75
+  nextgame recommend 4 --time 60-90 --include-tags coop
+""",
+    formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     area_parsers = parser.add_subparsers(
         dest="area",
         required=True
@@ -32,16 +43,48 @@ def add_game_area(area_parsers, parents=None):
     game_parser = area_parsers.add_parser(
         "game",
         parents=parents or [],
-        help="Operations on games"
+        help="Operations on games",
+        epilog="""
+examples:
+  # Add + list
+  nextgame game add "Catan" --players 3-4 --time 60 --tags "euro game" trading --weight 2.3
+  nextgame game list
+  nextgame game list --with-tags
+
+  # Delete by ID or by exact name
+  nextgame game delete 12
+  nextgame game delete --name "Catan"
+
+  # Search (quote multi-word tags)
+  nextgame game search --players 4 --include-tags coop
+  nextgame game search --time 60 --include-tags "deck builder" coop --exclude-tags "take that"
+
+  # Add/remove tags on an existing game
+  nextgame game tag add "Catan" trading "euro game"
+  nextgame game tag remove "Catan" trading
+""",
+    formatter_class=argparse.RawDescriptionHelpFormatter
     )
     game_actions = game_parser.add_subparsers(
         dest="action",
-        required=True
+        required=True,
     )
     game_add = game_actions.add_parser(
         "add",
         parents=parents or [],
-        help="Add a game to the database"
+        help="Add a game to the database",
+        epilog="""
+examples:
+  # Required: --players and --time
+  nextgame game add "Catan" --players 3-4 --time 60
+
+  # Optional: tags + weight (quote multi-word tags)
+  nextgame game add "Catan" --players 3-4 --time 60 --tags "euro game" trading --weight 2.3
+
+  # Ranges are allowed for players/time
+  nextgame game add "Nemesis" --players 1-5 --time 90-180 --tags coop "hidden roles" --weight 3.5
+""",
+    formatter_class=argparse.RawDescriptionHelpFormatter
     )
     game_add.add_argument(
         "game",
@@ -61,7 +104,7 @@ def add_game_area(area_parsers, parents=None):
         type=validate_tags,
         nargs="+",
         metavar="TAG",
-        help="Tags to assign to the game"
+        help="Tags to assign (use quotes for multi-word tags, e.g. 'engine builder')"
     )
     game_add.add_argument(
         "--time",
@@ -114,7 +157,28 @@ def add_game_area(area_parsers, parents=None):
     game_search = game_actions.add_parser(
         "search",
         parents=parents or [],
-        help="Search for games matching specific criteria"
+        help="Search for games matching specific criteria",
+        epilog="""
+examples:
+  # Player count: N matches exactly; MIN-MAX is inclusive
+  nextgame game search --players 4
+  nextgame game search --players 2-5
+
+  # Time: N or MIN-MAX (ranges are inclusive)
+  nextgame game search --time 60
+  nextgame game search --time 60-90
+
+  # Tags (quote multi-word tags)
+  nextgame game search --include-tags coop "deck builder"
+  nextgame game search --exclude-tags "take that"
+
+  # Combined filters
+  nextgame game search --players 4 --time 60-90 --weight 2.5 --include-tags coop
+
+  # Invalid: same tag in include + exclude (this should error)
+  nextgame game search --include-tags coop --exclude-tags coop
+""",
+    formatter_class=argparse.RawDescriptionHelpFormatter
     )
     game_search.add_argument(
         "--players",
@@ -127,14 +191,14 @@ def add_game_area(area_parsers, parents=None):
         type=validate_tags,
         nargs="+",
         metavar="TAG",
-        help="Tags the game must not have"
+        help="Tags the game must not have (use quotes for multi-word tags, e.g. 'deck builder' coop)"
     )
     game_search.add_argument(
         "--include-tags",
         type=validate_tags,
         nargs="+",
         metavar="TAG",
-        help="Tags the game must have"
+        help="Tags the game must have (use quotes for multi-word tags, e.g. 'deck builder' coop)"
     )
     game_search.add_argument(
         "--time",
@@ -212,7 +276,19 @@ def add_log_area(area_parsers, parents=None):
     log_parser = area_parsers.add_parser(
         "log",
         parents=parents or [],
-        help="Operations on game sessions"
+        help="Operations on game sessions",
+        epilog="""
+examples:
+  # Add a session
+  nextgame log add "Catan" --date 2025-11-15 --players 4 --time 75
+
+  # List sessions
+  nextgame log list
+
+  # Delete a session by ID
+  nextgame log delete 42
+""",
+    formatter_class=argparse.RawDescriptionHelpFormatter
     )
     log_actions = log_parser.add_subparsers(
         dest="action", 
@@ -275,7 +351,23 @@ def add_recommend_area(area_parsers, parents=None):
     recommend_parser = area_parsers.add_parser(
         "recommend",
         parents=parents or [],
-        help="Recommend games to play based on specified criteria"
+        help="Recommend games to play based on specified criteria",
+        epilog="""
+examples:
+  # Basic recommendation for a player count
+  nextgame recommend 4
+
+  # Add preferences (ranges are inclusive)
+  nextgame recommend 4 --time 60-90 --weight 2.0
+
+  # Tag filters (quote multi-word tags)
+  nextgame recommend 4 --include-tags coop "deck builder"
+  nextgame recommend 4 --exclude-tags "take that"
+
+  # Invalid: same tag in include + exclude (this should error)
+  nextgame recommend 4 --include-tags coop --exclude-tags coop
+""",
+    formatter_class=argparse.RawDescriptionHelpFormatter
     )
     recommend_parser.add_argument(
         "players",
@@ -314,7 +406,19 @@ def add_tag_area(area_parsers, parents=None):
     tag_parser = area_parsers.add_parser(
         "tag",
         parents=parents or [],
-        help="Operations on tags"
+        help="Operations on tags",
+        epilog="""
+examples:
+  # Add tags (quote multi-word tags)
+  nextgame tag add coop "deck builder" "euro game"
+
+  # List all tags
+  nextgame tag list
+
+  # Delete tags
+  nextgame tag delete coop "euro game"
+""",
+    formatter_class=argparse.RawDescriptionHelpFormatter
     )
     tag_actions = tag_parser.add_subparsers(
         dest="action",
@@ -460,26 +564,27 @@ def validate_date(value):
     sections = value.split("-")
     if len(sections) != 3:
         raise argparse.ArgumentTypeError("date must be formatted as YYYY-MM-DD")
+    year_str, month_str, day_str = sections
     try:
-        year = int(sections[0])
+        year = int(year_str)
         if year < 1000:
-            raise argparse.ArgumentTypeError(f"'{year}' is not a valid year")
+            raise argparse.ArgumentTypeError(f"'{year_str}' is not a valid year")
         month = int(sections[1])
         if month < 1 or month > 12:
-            raise argparse.ArgumentTypeError(f"'{month}' is not a valid month")
+            raise argparse.ArgumentTypeError(f"'{month_str}' is not a valid month")
         day = int(sections[2])
     except ValueError:
         raise argparse.ArgumentTypeError("date sections must be integers")
     if day < 1 or day > 31:
-        raise argparse.ArgumentTypeError(f"'{day}' is not a valid day")
+        raise argparse.ArgumentTypeError(f"'{day_str}' is not a valid day")
     if month in [4, 6, 9, 11] and day > 30:
-        raise argparse.ArgumentTypeError(f"'{day}' is not a valid day for month '{month}'")
+        raise argparse.ArgumentTypeError(f"'{day_str}' is not a valid day for month '{month_str}'")
     if month == 2:
         # handle special cases for February
         if day > 28 and not is_leap_year(year):
-            raise argparse.ArgumentTypeError(f"'{day}' is not a valid day for month '{month}' and year '{year}'")
+            raise argparse.ArgumentTypeError(f"'{day_str}' is not a valid day for month '{month_str}' and year '{year_str}'")
         elif day > 29:
-            raise argparse.ArgumentTypeError(f"'{day}' is not a valid day for month '{month}' and year '{year}'")
+            raise argparse.ArgumentTypeError(f"'{day_str}' is not a valid day for month '{month_str}' and year '{year_str}'")
     return year, month, day
 
 
@@ -501,7 +606,7 @@ def validate_float_one_to_five(value):
             return v
     except ValueError:
         pass
-    raise argparse.ArgumentTypeError("must be a decimal between 1.0 and 5.0")
+    raise argparse.ArgumentTypeError("must be a number between 1.0 and 5.0")
 
 def validate_game_name(value):
     # strip leading and trailing whitespace
@@ -526,7 +631,9 @@ def validate_game_players(value):
             raise argparse.ArgumentTypeError("must be a single integer or two integers separated by a dash '-'")
     if len(sections) == 2:
         if sections[0] == "":
-            raise argparse.ArgumentTypeError("must be greater than 0")
+            raise argparse.ArgumentTypeError("missing minimum")
+        if sections[1] == "":
+            raise argparse.ArgumentTypeError("missing maximum")
         try:
             low = int(sections[0])
             high = int(sections[1])
@@ -551,7 +658,9 @@ def validate_game_time(value):
             raise argparse.ArgumentTypeError("must be a single integer or two integers separated by a dash '-'")
     if len(sections) == 2:
         if sections[0] == "":
-            raise argparse.ArgumentTypeError("must be greater than 0")
+            raise argparse.ArgumentTypeError("missing minimum")
+        if sections[1] == "":
+            raise argparse.ArgumentTypeError("missing maximum")
         try:
             low = int(sections[0])
             high = int(sections[1])
