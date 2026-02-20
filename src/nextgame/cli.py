@@ -64,7 +64,7 @@ def add_game_area(area_parsers, parents=None):
     game_add.add_argument(
         "--time",
         required=True,
-        type=str,
+        type=validate_game_time,
         metavar="MINUTES|MIN-MAX",
         help="Estimated play time in minutes: N or MIN-MAX (e.g., 60 or 60-90)"
     )
@@ -133,7 +133,7 @@ def add_game_area(area_parsers, parents=None):
     )
     game_search.add_argument(
         "--time",
-        type=str,
+        type=validate_game_time,
         metavar="MINUTES|MIN-MAX",
         help="Estimated play time in minutes: Single value uses ±20%% (minimum ±10 min); MIN-MAX is inclusive"
     )
@@ -236,7 +236,7 @@ def add_log_area(area_parsers, parents=None):
     log_add.add_argument(
         "--time",
         required=True,
-        type=int,
+        type=validate_positive_integer,
         metavar="MINUTES",
         help="Play time in minutes"
     )
@@ -276,7 +276,7 @@ def add_recommend_area(area_parsers, parents=None):
     )
     recommend_parser.add_argument(
         "--time",
-        type=int,
+        type=validate_game_time,
         metavar="MINUTES",
         help="Ideal play time in minutes"
     )
@@ -470,6 +470,32 @@ def validate_game_players(value):
         except ValueError:
             raise argparse.ArgumentTypeError("must be a single integer or two integers separated by a dash '-'")
     raise argparse.ArgumentTypeError("range must be in the format <min_players>-<max_players> (e.g. 3-5)")
+	
+def validate_game_time(value):
+    sections = value.split("-")
+    if len(sections) == 1:
+        try:
+            game_time = int(value)
+            if game_time <= 0:
+                raise argparse.ArgumentTypeError("must be greater than 0")
+            return game_time, game_time
+        except ValueError:
+            raise argparse.ArgumentTypeError("must be a single integer or two integers separated by a dash '-'")
+    if len(sections) == 2:
+        if sections[0] == "":
+            raise argparse.ArgumentTypeError("must be greater than 0")
+        try:
+            low = int(sections[0])
+            high = int(sections[1])
+            if low <= 0:
+                raise argparse.ArgumentTypeError("must be greater than 0")
+            if low >= high:
+                raise argparse.ArgumentTypeError("minimum must be less than maximum")
+            return low, high
+        except ValueError:
+            raise argparse.ArgumentTypeError("must be a single integer or two integers separated by a dash '-'")
+    raise argparse.ArgumentTypeError("range must be in the format <min_time>-<max_time> (e.g. 60-90)")
+
 
 def validate_positive_integer(value):
     try:
