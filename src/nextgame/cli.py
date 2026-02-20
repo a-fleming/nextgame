@@ -86,7 +86,7 @@ def add_game_area(area_parsers, parents=None):
     game_delete_args = game_delete.add_mutually_exclusive_group(required=True)
     game_delete_args.add_argument(
         "id",
-        type=int,
+        type=validate_positive_integer,
         nargs="?",
         metavar="GAME_ID",
         help="ID of the game to delete"
@@ -258,7 +258,7 @@ def add_log_area(area_parsers, parents=None):
     )
     log_delete.add_argument(
         "id",
-        type=int,
+        type=validate_positive_integer,
         metavar="SESSION_ID",
         help="ID of session"
     )
