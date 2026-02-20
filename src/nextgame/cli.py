@@ -51,7 +51,7 @@ def add_game_area(area_parsers, parents=None):
     game_add.add_argument(
         "--players",
         required=True,
-        type=str,
+        type=validate_game_players,
         metavar="N|MIN-MAX",
         help="Player count: N or MIN-MAX (e.g., 4 or 2-5)"
     )
@@ -115,7 +115,7 @@ def add_game_area(area_parsers, parents=None):
     )
     game_search.add_argument(
         "--players",
-        type=str,
+        type=validate_game_players,
         metavar="N|MIN-MAX",
         help="Player count: N matches exactly; MIN-MAX is inclusive"
     )
@@ -230,7 +230,7 @@ def add_log_area(area_parsers, parents=None):
     log_add.add_argument(
         "--players",
         required=True,
-        type=int,
+        type=validate_positive_integer,
         help="Number of players"
     )
     log_add.add_argument(
@@ -270,7 +270,7 @@ def add_recommend_area(area_parsers, parents=None):
     )
     recommend_parser.add_argument(
         "players",
-        type=int,
+        type=validate_positive_integer,
         metavar="PLAYERS",
         help="Number of players"
     )
@@ -445,6 +445,40 @@ def error_if_tag_options_conflict(args):
     conflicts = include & exclude
     if conflicts:
         args.parser.error(f"Tags cannot be both included and excluded: {', '.join(sorted(conflicts))}")
+
+def validate_game_players(value):
+    sections = value.split("-")
+    if len(sections) == 1:
+        try:
+            game_players = int(value)
+            if game_players <= 0:
+                raise argparse.ArgumentTypeError("must be greater than 0")
+            return game_players, game_players
+        except ValueError:
+            raise argparse.ArgumentTypeError("must be a single integer or two integers separated by a dash '-'")
+    if len(sections) == 2:
+        if sections[0] == "":
+            raise argparse.ArgumentTypeError("must be greater than 0")
+        try:
+            low = int(sections[0])
+            high = int(sections[1])
+            if low <= 0:
+                raise argparse.ArgumentTypeError("must be greater than 0")
+            if low >= high:
+                raise argparse.ArgumentTypeError("minimum must be less than maximum")
+            return low, high
+        except ValueError:
+            raise argparse.ArgumentTypeError("must be a single integer or two integers separated by a dash '-'")
+    raise argparse.ArgumentTypeError("range must be in the format <min_players>-<max_players> (e.g. 3-5)")
+
+def validate_positive_integer(value):
+    try:
+        value = int(value)
+        if value > 0:
+            return value
+    except ValueError:
+        raise argparse.ArgumentTypeError("must be an integer")
+    raise argparse.ArgumentTypeError("must be greater than 0")
 
 def main(argv=None) -> int:
     parser = build_parser()
