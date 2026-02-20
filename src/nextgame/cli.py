@@ -70,7 +70,7 @@ def add_game_area(area_parsers, parents=None):
     )
     game_add.add_argument(
         "--weight",
-        type=float,
+        type=validate_float_one_to_five,
         help="Complexity rating on a scale from 1.0 to 5.0"
     )
     game_add.set_defaults(func=cmd_game_add, parser=game_add)
@@ -139,7 +139,7 @@ def add_game_area(area_parsers, parents=None):
     )
     game_search.add_argument(
         "--weight",
-        type=float,
+        type=validate_float_one_to_five,
         help="Complexity rating on a scale from 1.0 to 5.0"
     )
     game_search.set_defaults(func=cmd_game_search, parser=game_search)
@@ -282,7 +282,7 @@ def add_recommend_area(area_parsers, parents=None):
     )
     recommend_parser.add_argument(
         "--weight",
-        type=float,
+        type=validate_float_one_to_five,
         help="Ideal complexity rating on a scale from 1.0 to 5.0"
     )
     recommend_parser.add_argument(
@@ -445,6 +445,16 @@ def error_if_tag_options_conflict(args):
     conflicts = include & exclude
     if conflicts:
         args.parser.error(f"Tags cannot be both included and excluded: {', '.join(sorted(conflicts))}")
+
+def validate_float_one_to_five(value):
+    try:
+        v = float(value)
+        if 1 <= v <= 5:
+            return v
+    except ValueError:
+        pass
+    raise argparse.ArgumentTypeError("must be a decimal between 1.0 and 5.0")
+
 
 def validate_game_players(value):
     sections = value.split("-")
