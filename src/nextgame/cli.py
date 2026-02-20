@@ -232,7 +232,7 @@ def add_log_area(area_parsers, parents=None):
     log_add.add_argument(
         "--date",
         required=True,
-        type=str,
+        type=validate_date,
         metavar="YYYY-MM-DD",
         help="Date the game was played"
     )
@@ -454,6 +454,45 @@ def error_if_tag_options_conflict(args):
     conflicts = include & exclude
     if conflicts:
         args.parser.error(f"Tags cannot be both included and excluded: {', '.join(sorted(conflicts))}")
+
+def validate_date(value):
+    # YYYY-MM-DD
+    sections = value.split("-")
+    if len(sections) != 3:
+        raise argparse.ArgumentTypeError("date must be formatted as YYYY-MM-DD")
+    try:
+        year = int(sections[0])
+        if year < 1000:
+            raise argparse.ArgumentTypeError(f"'{year}' is not a valid year")
+        month = int(sections[1])
+        if month < 1 or month > 12:
+            raise argparse.ArgumentTypeError(f"'{month}' is not a valid month")
+        day = int(sections[2])
+    except ValueError:
+        raise argparse.ArgumentTypeError("date sections must be integers")
+    if day < 1 or day > 31:
+        raise argparse.ArgumentTypeError(f"'{day}' is not a valid day")
+    if month in [4, 6, 9, 11] and day > 30:
+        raise argparse.ArgumentTypeError(f"'{day}' is not a valid day for month '{month}'")
+    if month == 2:
+        # handle special cases for February
+        if day > 28 and not is_leap_year(year):
+            raise argparse.ArgumentTypeError(f"'{day}' is not a valid day for month '{month}' and year '{year}'")
+        elif day > 29:
+            raise argparse.ArgumentTypeError(f"'{day}' is not a valid day for month '{month}' and year '{year}'")
+    return year, month, day
+
+
+def is_leap_year(year):
+    if year % 4 == 0:
+        if year % 100 == 0:
+            if year % 400 == 0:
+                return True
+            else:
+                return False
+        else:
+            return True
+    return False
 
 def validate_float_one_to_five(value):
     try:
