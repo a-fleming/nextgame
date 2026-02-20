@@ -45,6 +45,7 @@ def add_game_area(area_parsers, parents=None):
     )
     game_add.add_argument(
         "game",
+        type=validate_game_name,
         metavar="GAME",
         help="Name of the game"
     )
@@ -92,6 +93,7 @@ def add_game_area(area_parsers, parents=None):
     )
     game_delete_args.add_argument(
         "--name",
+        type=validate_game_name,
         metavar="GAME",
         help="Exact name of the game to delete"
     )
@@ -165,6 +167,7 @@ def add_game_area(area_parsers, parents=None):
     )
     game_tag_add.add_argument(
         "game",
+        type=validate_game_name,
         metavar="GAME",
         help="Name of the game"
     )
@@ -184,6 +187,7 @@ def add_game_area(area_parsers, parents=None):
     )
     game_tag_remove.add_argument(
         "game",
+        type=validate_game_name,
         metavar="GAME",
         help="Name of the game"
     )
@@ -221,7 +225,7 @@ def add_log_area(area_parsers, parents=None):
     )
     log_add.add_argument(
         "game",
-        type=str,
+        type=validate_game_name,
         metavar="GAME",
         help="Name of the game"
     )
@@ -460,6 +464,16 @@ def validate_float_one_to_five(value):
         pass
     raise argparse.ArgumentTypeError("must be a decimal between 1.0 and 5.0")
 
+def validate_game_name(value):
+    # strip leading and trailing whitespace
+    value = value.strip()
+
+    if not value:
+        raise argparse.ArgumentTypeError("game name cannot be empty")
+
+    # collapse internal whitespace
+    value = " ".join(value.split())
+    return value
 
 def validate_game_players(value):
     sections = value.split("-")
@@ -510,7 +524,6 @@ def validate_game_time(value):
         except ValueError:
             raise argparse.ArgumentTypeError("must be a single integer or two integers separated by a dash '-'")
     raise argparse.ArgumentTypeError("range must be in the format <min_time>-<max_time> (e.g. 60-90)")
-
 
 def validate_positive_integer(value):
     try:
