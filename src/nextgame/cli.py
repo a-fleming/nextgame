@@ -696,7 +696,7 @@ def validate_tags(value):
 
 def main(argv=None) -> int:
     parser = build_parser()
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     args.func(args)
     
     return 0
