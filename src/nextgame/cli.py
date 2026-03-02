@@ -1,5 +1,6 @@
 import argparse
 
+from nextgame.config import settings
 from nextgame.parsers.demo import add_demo_area
 from nextgame.parsers.game import add_game_area
 from nextgame.parsers.init import add_init_area
@@ -27,8 +28,8 @@ examples:
     common = argparse.ArgumentParser(add_help=False)
     common.add_argument(
         "--db-path",
-        default="nextgame.db",
-        help="Path to database file to use or create (default: %(default)s)"
+        default=None,
+        help=f"Path to database file to use or create (default: {settings.db_path})"
     )
     add_demo_area(area_parsers, parents=[common])
     add_game_area(area_parsers, parents=[common])
