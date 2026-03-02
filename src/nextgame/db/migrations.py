@@ -20,7 +20,7 @@ def apply_migrations(conn: sqlite3.Connection, migrations_dir: Traversable) -> l
     for file in files:
         version = file.stem  # e.g. "001_init"
         if version in done:
-            logger.info("Skipped already applied migration: %s", version)
+            logger.debug("Skipped already applied migration: %s", version)
             continue
         sql = file.read_text(encoding="utf-8")
 
