@@ -1,7 +1,7 @@
 -- Create games table
 CREATE TABLE IF NOT EXISTS games (
     id INTEGER PRIMARY KEY,
-    name TEXT NOT NULL,
+    name TEXT NOT NULL UNIQUE,
     min_players INTEGER NOT NULL CHECK (min_players >= 1),
     max_players INTEGER NOT NULL,
     est_avg_minutes FLOAT NOT NULL CHECK (est_avg_minutes > 0),
