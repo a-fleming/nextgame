@@ -1,0 +1,505 @@
+{
+  "games": [
+    {
+      "name": "7 Wonders",
+      "min_players": 3,
+      "max_players": 7,
+      "est_avg_minutes": 30,
+      "weight": 2.31,
+      "tags": [
+        "card game",
+        "open drafting",
+        "simultaneous action selection",
+        "set collection",
+        "trading",
+        "race"
+      ]
+    },
+    {
+      "name": "Azul",
+      "min_players": 2,
+      "max_players": 4,
+      "est_avg_minutes": 45,
+      "weight": 1.77,
+      "tags": [
+        "abstract strategy",
+        "renaissance",
+        "chaining",
+        "end game bonuses",
+        "open drafting",
+        "set collection",
+        "tile placement"
+      ]
+    },
+    {
+      "name": "Carcassonne",
+      "min_players": 2,
+      "max_players": 5,
+      "est_avg_minutes": 45,
+      "weight": 1.89,
+      "tags": [
+        "tile placement",
+        "set collection"
+      ]
+    },
+    {
+      "name": "Cards Against Humanity",
+      "min_players": 4,
+      "max_players": 10,
+      "est_avg_minutes": 30,
+      "weight": 1.17,
+      "tags": [
+        "card game",
+        "humor",
+        "mature / adult",
+        "party game",
+        "player judge",
+        "simultaneous action selection"
+      ]
+    },
+    {
+      "name": "Catan",
+      "min_players": 3,
+      "max_players": 4,
+      "est_avg_minutes": 120,
+      "weight": 2.28,
+      "tags": [
+        "economic",
+        "negotiation",
+        "dice rolling",
+        "hand management",
+        "hidden victory points",
+        "income",
+        "market",
+        "race",
+        "random production",
+        "take that",
+        "trading",
+        "variable set-up"
+      ]
+    },
+    {
+      "name": "Clue",
+      "min_players": 2,
+      "max_players": 6,
+      "est_avg_minutes": 45,
+      "weight": 1.64,
+      "tags": [
+        "deduction",
+        "murder / mystery",
+        "grid movement",
+        "memory",
+        "roll / spin and move",
+        "square grid"
+      ]
+    },
+    {
+      "name": "Codenames",
+      "min_players": 2,
+      "max_players": 8,
+      "est_avg_minutes": 15,
+      "weight": 1.26,
+      "tags": [
+        "deduction",
+        "party game",
+        "memory"
+      ]
+    },
+    {
+      "name": "Hanabi",
+      "min_players": 2,
+      "max_players": 5,
+      "est_avg_minutes": 25,
+      "weight": 1.69,
+      "tags": [
+        "card game",
+        "deduction",
+        "cooperative",
+        "hand management",
+        "memory",
+        "communication limits",
+        "ordering",
+        "set collection"
+      ]
+    },
+    {
+      "name": "Monopoly",
+      "min_players": 2,
+      "max_players": 8,
+      "est_avg_minutes": 120,
+      "weight": 1.62,
+      "tags": [
+        "economic",
+        "auction / bidding",
+        "income",
+        "loans",
+        "lose a turn",
+        "ownership",
+        "player elimination",
+        "roll / spin and move",
+        "set collection",
+        "track movement",
+        "trading"
+      ]
+    },
+    {
+      "name": "Nemesis",
+      "min_players": 1,
+      "max_players": 5,
+      "est_avg_minutes": 180,
+      "weight": 3.49,
+      "tags": [
+        "horror",
+        "science fiction",
+        "cooperative",
+        "semi-cooperative",
+        "hidden roles",
+        "player elimination",
+        "dice rolling",
+        "hand management",
+        "variable player powers"
+      ]
+    },
+    {
+      "name": "Pandemic",
+      "min_players": 2,
+      "max_players": 4,
+      "est_avg_minutes": 45,
+      "weight": 2.39,
+      "tags": [
+        "cooperative",
+        "hand management",
+        "set collection",
+        "trading",
+        "variable player powers",
+        "connections"
+      ]
+    },
+    {
+      "name": "Splendor",
+      "min_players": 2,
+      "max_players": 4,
+      "est_avg_minutes": 30,
+      "weight": 1.78,
+      "tags": [
+        "renaissance",
+        "economic",
+        "open drafting",
+        "set collection",
+        "race"
+      ]
+    },
+    {
+      "name": "The Resistance: Avalon",
+      "min_players": 5,
+      "max_players": 10,
+      "est_avg_minutes": 30,
+      "weight": 1.74,
+      "tags": [
+        "hidden roles",
+        "deduction",
+        "party game"
+      ]
+    },
+    {
+      "name": "Ticket to Ride",
+      "min_players": 2,
+      "max_players": 5,
+      "est_avg_minutes": 60,
+      "weight": 1.82,
+      "tags": [
+        "trains",
+        "connections",
+        "network and route building",
+        "contracts",
+        "hand management",
+        "set collection",
+        "end game bonuses",
+        "open drafting",
+        "push your luck"
+      ]
+    },
+    {
+      "name": "UNO",
+      "min_players": 2,
+      "max_players": 10,
+      "est_avg_minutes": 30,
+      "weight": 1.1,
+      "tags": [
+        "card game",
+        "children's game",
+        "number",
+        "hand management",
+        "matching",
+        "lose a turn",
+        "take that"
+      ]
+    },
+    {
+      "name": "Unstable Unicorns",
+      "min_players": 2,
+      "max_players": 8,
+      "est_avg_minutes": 60,
+      "weight": 1.49,
+      "tags": [
+        "card game",
+        "humor",
+        "party game",
+        "hand management",
+        "set collection",
+        "take that"
+      ]
+    }
+  ],
+  "sessions": [
+    {
+      "game": "7 Wonders",
+      "players": 5,
+      "duration_minutes": 35,
+      "played_on": "2025-12-11"
+    },
+    {
+      "game": "7 Wonders",
+      "players": 7,
+      "duration_minutes": 40,
+      "played_on": "2026-01-29"
+    },
+
+    {
+      "game": "Azul",
+      "players": 3,
+      "duration_minutes": 40,
+      "played_on": "2025-11-06"
+    },
+    {
+      "game": "Azul",
+      "players": 4,
+      "duration_minutes": 60,
+      "played_on": "2025-12-19"
+    },
+    {
+      "game": "Azul",
+      "players": 2,
+      "duration_minutes": 38,
+      "played_on": "2026-02-09"
+    },
+
+    {
+      "game": "Carcassonne",
+      "players": 2,
+      "duration_minutes": 40,
+      "played_on": "2025-11-12"
+    },
+    {
+      "game": "Carcassonne",
+      "players": 5,
+      "duration_minutes": 55,
+      "played_on": "2026-02-16"
+    },
+
+    {
+      "game": "Cards Against Humanity",
+      "players": 6,
+      "duration_minutes": 35,
+      "played_on": "2025-11-09"
+    },
+    {
+      "game": "Cards Against Humanity",
+      "players": 8,
+      "duration_minutes": 40,
+      "played_on": "2025-12-28"
+    },
+
+    {
+      "game": "Catan",
+      "players": 4,
+      "duration_minutes": 125,
+      "played_on": "2025-11-22"
+    },
+    {
+      "game": "Catan",
+      "players": 3,
+      "duration_minutes": 110,
+      "played_on": "2026-01-11"
+    },
+    {
+      "game": "Catan",
+      "players": 4,
+      "duration_minutes": 140,
+      "played_on": "2026-02-06"
+    },
+
+    {
+      "game": "Clue",
+      "players": 4,
+      "duration_minutes": 50,
+      "played_on": "2025-11-03"
+    },
+    {
+      "game": "Clue",
+      "players": 5,
+      "duration_minutes": 78,
+      "played_on": "2026-01-31"
+    },
+    {
+      "game": "Clue",
+      "players": 3,
+      "duration_minutes": 55,
+      "played_on": "2026-02-03"
+    },
+
+    {
+      "game": "Codenames",
+      "players": 6,
+      "duration_minutes": 20,
+      "played_on": "2025-12-05"
+    },
+    {
+      "game": "Codenames",
+      "players": 8,
+      "duration_minutes": 25,
+      "played_on": "2026-02-05"
+    },
+
+    {
+      "game": "Hanabi",
+      "players": 3,
+      "duration_minutes": 20,
+      "played_on": "2025-11-28"
+    },
+    {
+      "game": "Hanabi",
+      "players": 3,
+      "duration_minutes": 15,
+      "played_on": "2026-01-05"
+    },
+    {
+      "game": "Hanabi",
+      "players": 4,
+      "duration_minutes": 28,
+      "played_on": "2026-02-19"
+    },
+
+    {
+      "game": "Monopoly",
+      "players": 4,
+      "duration_minutes": 150,
+      "played_on": "2025-12-14"
+    },
+    {
+      "game": "Monopoly",
+      "players": 3,
+      "duration_minutes": 120,
+      "played_on": "2026-02-08"
+    },
+
+    {
+      "game": "Nemesis",
+      "players": 4,
+      "duration_minutes": 240,
+      "played_on": "2025-12-07"
+    },
+    {
+      "game": "Nemesis",
+      "players": 3,
+      "duration_minutes": 210,
+      "played_on": "2026-02-12"
+    },
+
+    {
+      "game": "Pandemic",
+      "players": 4,
+      "duration_minutes": 55,
+      "played_on": "2025-11-26"
+    },
+    {
+      "game": "Pandemic",
+      "players": 2,
+      "duration_minutes": 48,
+      "played_on": "2026-01-23"
+    },
+    {
+      "game": "Pandemic",
+      "players": 4,
+      "duration_minutes": 62,
+      "played_on": "2026-02-21"
+    },
+
+    {
+      "game": "Splendor",
+      "players": 2,
+      "duration_minutes": 25,
+      "played_on": "2025-11-14"
+    },
+    {
+      "game": "Splendor",
+      "players": 2,
+      "duration_minutes": 27,
+      "played_on": "2025-12-02"
+    },
+    {
+      "game": "Splendor",
+      "players": 3,
+      "duration_minutes": 35,
+      "played_on": "2026-02-14"
+    },
+
+    {
+      "game": "The Resistance: Avalon",
+      "players": 7,
+      "duration_minutes": 35,
+      "played_on": "2025-11-24"
+    },
+    {
+      "game": "The Resistance: Avalon",
+      "players": 8,
+      "duration_minutes": 45,
+      "played_on": "2026-02-10"
+    },
+
+    {
+      "game": "Ticket to Ride",
+      "players": 2,
+      "duration_minutes": 45,
+      "played_on": "2025-11-30"
+    },
+    {
+      "game": "Ticket to Ride",
+      "players": 4,
+      "duration_minutes": 75,
+      "played_on": "2026-01-18"
+    },
+    {
+      "game": "Ticket to Ride",
+      "players": 2,
+      "duration_minutes": 55,
+      "played_on": "2026-02-26"
+    },
+
+    {
+      "game": "UNO",
+      "players": 4,
+      "duration_minutes": 25,
+      "played_on": "2025-11-17"
+    },
+    {
+      "game": "UNO",
+      "players": 6,
+      "duration_minutes": 35,
+      "played_on": "2026-01-09"
+    },
+
+    {
+      "game": "Unstable Unicorns",
+      "players": 5,
+      "duration_minutes": 60,
+      "played_on": "2025-12-20"
+    },
+    {
+      "game": "Unstable Unicorns",
+      "players": 4,
+      "duration_minutes": 50,
+      "played_on": "2026-02-01"
+    }
+  ]
+}
