@@ -1,4 +1,5 @@
 import argparse
+import logging
 
 from nextgame.config import settings
 from nextgame.parsers.demo import add_demo_area
@@ -7,6 +8,10 @@ from nextgame.parsers.init import add_init_area
 from nextgame.parsers.log import add_log_area
 from nextgame.parsers.recommend import add_recommend_area
 from nextgame.parsers.tag import add_tag_area
+from nextgame.runtime_setup import configure_logging
+
+logger = logging.getLogger(__name__)
+
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
@@ -42,6 +47,9 @@ examples:
 def main(argv=None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
+
+    # argparse exits before this if no command will be executed
+    configure_logging(settings)
     args.func(args)
     return 0
 
