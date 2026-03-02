@@ -32,7 +32,6 @@ def load_settings() -> Settings:
     log_level = os.getenv("NEXTGAME_LOG_LEVEL", "INFO").upper()
 
     log_path_str = os.getenv("NEXTGAME_LOG_PATH")
-    print(f"log_path_str: {log_path_str}")
     log_path = Path(log_path_str) if log_path_str else _default_log_path()
 
     return Settings(db_path=db_path, log_path=log_path, log_level=log_level)
