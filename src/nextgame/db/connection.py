@@ -14,7 +14,9 @@ def get_connection(db_path: PathLike) -> sqlite3.Connection:
     db_path = Path(db_path).expanduser()
     db_path.parent.mkdir(parents=True, exist_ok=True)
 
-    conn = sqlite3.connect(db_path)
+    # Set autocommit to False to for PEP 249-compliant transaction behavior
+    conn = sqlite3.connect(db_path, autocommit=False)
+    
     logger.info("Opened SQLite connection: %s", db_path)
     conn.row_factory = sqlite3.Row # have rows behave like dicts: row["col"]
     conn.execute("PRAGMA foreign_keys = ON;") # enforce foreign key constraints
