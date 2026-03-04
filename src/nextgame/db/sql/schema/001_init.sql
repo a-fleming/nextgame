@@ -14,7 +14,8 @@ CREATE TABLE IF NOT EXISTS games (
 -- Create tags table
 CREATE TABLE IF NOT EXISTS tags (
     id INTEGER PRIMARY KEY,
-    name TEXT NOT NULL UNIQUE
+    name TEXT NOT NULL UNIQUE,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
 -- Create game_tags table
