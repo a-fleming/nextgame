@@ -1,0 +1,16 @@
+from importlib.resources import files
+from importlib.resources.abc import Traversable
+from pathlib import Path
+
+def load_sql_query(relative_path: Path|str) -> str:
+    sql_query_path = files("nextgame.db.sql.queries")
+    if isinstance(relative_path, str):
+        relative_path = Path(relative_path)
+    
+    target_path = sql_query_path / relative_path
+    return load_sql(target_path)
+    
+def load_sql(file_path: Traversable) -> str:
+    if not file_path.is_file() or not file_path.name.endswith(".sql"):
+        raise ValueError(f"{file_path} is not a .sql file")
+    return file_path.read_text(encoding="utf-8")
