@@ -1,18 +1,22 @@
 import logging
 import sqlite3
 
+from contextlib import contextmanager
 from nextgame.config import settings
 from nextgame.db.connection import get_connection
 from nextgame.db.migrations import apply_migrations
 from pathlib import Path
+from typing import Iterator
 
 logger = logging.getLogger(__name__)
 
-def open_db(db_path: str|None) -> sqlite3.Connection:
-    conn, _ = open_db_with_migrations(db_path)
-    return conn
+@contextmanager
+def open_db(db_path: str|None) -> Iterator[sqlite3.Connection]:
+    with open_db_with_migrations(db_path) as (conn, _applied):
+        yield conn
 
-def open_db_with_migrations(db_path: str|None) -> tuple[sqlite3.Connection, list[str]]:
+@contextmanager
+def open_db_with_migrations(db_path: str|None) -> Iterator[tuple[sqlite3.Connection, list[str]]]:
     db_path = resolve_db_path(db_path)
 
     if db_path.exists():
@@ -20,9 +24,12 @@ def open_db_with_migrations(db_path: str|None) -> tuple[sqlite3.Connection, list
     else:
         logger.info("Creating new database: %s", db_path)
     conn = get_connection(db_path)
-    with conn:
-        applied = apply_migrations(conn, settings.migrations_dir)
-    return conn, applied
+    try:
+        with conn:
+            applied = apply_migrations(conn, settings.migrations_dir)
+        yield conn, applied
+    finally:
+        conn.close()
 
 def resolve_db_path(db_path: str|None) -> sqlite3.Connection:
     effective_db_path = settings.db_path
