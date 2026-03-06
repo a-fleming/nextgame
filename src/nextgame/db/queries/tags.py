@@ -43,7 +43,7 @@ def get_tag_ids_by_names(conn: sqlite3.Connection, names: list[str]) -> dict[str
     sql = sql.replace(IN_CLAUSE_PLACEHOLDER, placeholder)
     cur = conn.execute(sql, names)
     rows = cur.fetchall()
-    return {name: tag_id for (tag_id, name) in rows}
+    return {row['name']: row['tag_id'] for row in rows}
 
 def get_tags(conn: sqlite3.Connection) -> list[str]:
     sql = load_sql_query(SELECT_ALL_TAG_NAMES_SQL)
