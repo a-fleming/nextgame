@@ -2,6 +2,9 @@ from importlib.resources import files
 from importlib.resources.abc import Traversable
 from pathlib import Path
 
+IN_CLAUSE_PLACEHOLDER = "__IN_CLAUSE__"
+
+
 def load_sql_query(relative_path: Path|str) -> str:
     sql_query_path = files("nextgame.db.sql.queries")
     if isinstance(relative_path, str):
@@ -14,3 +17,7 @@ def load_sql(file_path: Traversable) -> str:
     if not file_path.is_file() or not file_path.name.endswith(".sql"):
         raise ValueError(f"{file_path} is not a .sql file")
     return file_path.read_text(encoding="utf-8")
+
+def populate_in_clause(sql: str, items: list[any]) -> str:
+    placeholder = f"({','.join(['?'] * len(items))})"
+    return sql.replace(IN_CLAUSE_PLACEHOLDER, placeholder)
