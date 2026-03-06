@@ -15,9 +15,10 @@ def get_connection(db_path: PathLike) -> sqlite3.Connection:
     db_path.parent.mkdir(parents=True, exist_ok=True)
 
     # Set autocommit to False to for PEP 249-compliant transaction behavior
-    conn = sqlite3.connect(db_path, autocommit=False)
+    conn = sqlite3.connect(db_path, autocommit=False, timeout=5.0)
     
     logger.info("Opened SQLite connection: %s", db_path)
     conn.row_factory = sqlite3.Row # have rows behave like dicts: row["col"]
     conn.execute("PRAGMA foreign_keys = ON;") # enforce foreign key constraints
+    conn.execute("PRAGMA busy_timeout = 5000;")
     return conn
