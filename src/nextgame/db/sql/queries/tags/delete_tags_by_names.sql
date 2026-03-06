@@ -1,0 +1,2 @@
+DELETE FROM tags
+WHERE name IN __IN_CLAUSE__;

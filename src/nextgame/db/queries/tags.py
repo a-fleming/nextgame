@@ -5,6 +5,7 @@ from nextgame.db.queries.common import load_sql_query, populate_in_clause
 
 logger = logging.getLogger(__name__)
 
+DELETE_TAGS_SQL = "tags/delete_tags_by_names.sql"
 INSERT_TAG_SQL = "tags/insert_tag.sql"
 SELECT_ALL_TAG_NAMES_SQL = "tags/select_all_tag_names.sql"
 SELECT_TAG_IDS_BY_NAMES_SQL = "tags/select_tag_ids_by_names.sql"
@@ -32,6 +33,27 @@ def add_tags(conn: sqlite3.Connection, names: list[str]) -> dict[str, tuple[int,
 
     # Return the merged dictionary of existing and new tags with insert results
     return existing_with_flag | new_with_flag
+
+def delete_tags(conn: sqlite3.Connection, names: list[str]) -> dict[str, bool]:
+    if not names:
+        return {}
+    names = list(dict.fromkeys(names))  # remove duplicates
+
+    existing = list(get_tag_ids_by_names(conn, names)) # just keep names of existing tags
+    missing = [n for n in names if n not in existing]
+
+    if existing:
+        # TODO: check for tags in use by games and, if found, fail with helpful message
+
+        sql = load_sql_query(DELETE_TAGS_SQL)
+        sql = populate_in_clause(sql, existing)
+        _cur = conn.execute(sql, existing)
+    
+    existing_with_flag = {name: True for name in existing}
+    missing_with_flag = {name: False for name in missing}
+
+    # Return the merged dictionary of existing and missing tags with delete results
+    return existing_with_flag | missing_with_flag
 
 def get_tag_ids_by_names(conn: sqlite3.Connection, names: list[str]) -> dict[str, int]:
     if not names:
