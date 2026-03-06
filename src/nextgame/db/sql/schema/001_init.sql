@@ -22,7 +22,9 @@ CREATE TABLE IF NOT EXISTS tags (
 CREATE TABLE IF NOT EXISTS game_tags (
     game_id INTEGER NOT NULL,
     tag_id INTEGER NOT NULL,
-    UNIQUE (game_id, tag_id)
+    PRIMARY KEY (game_id, tag_id),
+    FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE CASCADE,
+    FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE RESTRICT
 );
 
 -- Create sessions table
@@ -33,5 +35,5 @@ CREATE TABLE IF NOT EXISTS sessions (
     duration_minutes INTEGER NOT NULL CHECK (duration_minutes > 0),
     played_on TEXT NOT NULL DEFAULT (date('now')),
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
-    FOREIGN KEY (game_id) REFERENCES games(id)
+    FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE CASCADE
 );
