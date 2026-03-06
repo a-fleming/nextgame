@@ -6,6 +6,7 @@ from nextgame.db.queries.common import load_sql_query
 logger = logging.getLogger(__name__)
 
 INSERT_TAG_SQL = "tags/insert_tag.sql"
+SELECT_ALL_TAG_NAMES_SQL = "tags/select_all_tag_names.sql"
 SELECT_TAG_IDS_BY_NAMES_SQL = "tags/select_tag_ids_by_names.sql"
 
 IN_CLAUSE_PLACEHOLDER = "__IN_CLAUSE__"
@@ -43,3 +44,9 @@ def get_tag_ids_by_names(conn: sqlite3.Connection, names: list[str]) -> dict[str
     cur = conn.execute(sql, names)
     rows = cur.fetchall()
     return {name: tag_id for (tag_id, name) in rows}
+
+def get_tags(conn: sqlite3.Connection) -> list[str]:
+    sql = load_sql_query(SELECT_ALL_TAG_NAMES_SQL)
+    cur = conn.execute(sql)
+    rows = cur.fetchall()
+    return [row['name'] for row in rows]

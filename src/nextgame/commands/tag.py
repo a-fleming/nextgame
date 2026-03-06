@@ -1,7 +1,7 @@
 import logging
 
 from nextgame.commands.common import open_db
-from nextgame.db.queries.tags import add_tags
+from nextgame.db.queries.tags import add_tags, get_tags
 
 logger = logging.getLogger(__name__)
 
@@ -30,5 +30,12 @@ def cmd_tag_delete(args):
     print(f"db_path: {args.db_path}")
 
 def cmd_tag_list(args):
-    print("cmd_tag_list()")
-    print(f"db_path: {args.db_path}")
+    with open_db(args.db_path) as conn:
+        with conn:
+            tag_names = get_tags(conn)
+            if not tag_names:
+                print("No tags found")
+                return
+            for name in tag_names:
+                print(f"- {name}")
+
