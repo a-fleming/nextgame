@@ -58,6 +58,11 @@ examples:
         help="Name of the game"
     )
     game_add.add_argument(
+        "--create-tags",
+        action="store_true",
+        help="Create tags if they do not exist in the database",
+    )
+    game_add.add_argument(
         "--players",
         required=True,
         type=validate_game_players,
@@ -193,6 +198,11 @@ examples:
         "add",
         parents=parents or [],
         help="Add tags to a game"
+    )
+    game_tag_add.add_argument(
+        "--create-tags",
+        action="store_true",
+        help="Create tags if they do not exist in the database",
     )
     game_tag_add.add_argument(
         "game",
