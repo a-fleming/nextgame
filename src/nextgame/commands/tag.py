@@ -1,14 +1,14 @@
 import logging
 
 from nextgame.commands.common import open_db
-from nextgame.db.queries.tags import add_tags, delete_tags, get_tags
+from nextgame.db.queries.tags import add_tags_if_missing, delete_tags, get_tags
 
 logger = logging.getLogger(__name__)
 
 def cmd_tag_add(args):
     with open_db(args.db_path) as conn:
         with conn:
-            tags_with_flags = add_tags(conn, args.tags)
+            tags_with_flags = add_tags_if_missing(conn, args.tags)
         if len(tags_with_flags) == 1:
             tag = args.tags[0]
             if tags_with_flags[tag][1]:
