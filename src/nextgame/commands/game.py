@@ -1,14 +1,46 @@
+import logging
+import sqlite3
+
+from nextgame.commands.common import open_db
+from nextgame.db.queries.games import add_game, get_game_id_by_name
+from nextgame.db.queries.game_tags import apply_tags_if_missing
+from nextgame.db.queries.tags import add_tags_if_missing, get_tag_ids_by_names
 from nextgame.validation import error_if_tag_options_conflict
 
-
+logger = logging.getLogger(__name__)
 def cmd_game_add(args):
-    print("cmd_game_add()")
-    print(f"game: {args.game}")
-    print(f"players: {args.players}")
-    print(f"time: {args.time}")
-    print(f"weight: {args.weight}")
-    print(f"tags: {args.tags}")
-    print(f"db_path: {args.db_path}")
+    est_avg_minutes = estimate_minutes(args.time)
+    players_min, players_max = args.players
+    with open_db(args.db_path) as conn:
+        game_id = get_game_id_by_name(conn, args.game)
+        if game_id is not None:
+            args.parser.error(
+                f"'{args.game}' already exists in the database."
+            )
+
+        if args.tags:
+            distinct_tags = list(dict.fromkeys(args.tags))
+            tag_names_to_ids = get_tag_ids_by_names(conn, distinct_tags)
+            missing = [name for name in distinct_tags if name not in tag_names_to_ids]
+            if missing and not args.create_tags:
+                args.parser.error(
+                    f"Unknown tag{'' if len(missing) == 1 else 's'}: {', '.join([f'\'{name}\'' for name in sorted(missing)])}. "
+                    f"Use '--create-tags' to create missing tags."
+                )
+        success_msg = ""
+        with conn:
+            game_id = add_game(conn, args.game, players_min, players_max, est_avg_minutes, args.weight)
+            success_msg += f"Successfully added '{args.game}'"
+            if not args.tags:
+                print(success_msg)
+                return
+
+            # Because we error early if there are missing tags without the --create-tags flag,
+            # and return early if there are no tags to add, we can safely assume there are no
+            # missing tags or we are going to create them
+            msg = create_and_apply_tags(conn, game_id, distinct_tags)
+            success_msg += "\n- " + msg
+        print(success_msg)
 
 def cmd_game_delete(args):
     print("cmd_game_delete()")
@@ -32,13 +64,51 @@ def cmd_game_search(args):
     print(f"db_path: {args.db_path}")
 
 def cmd_game_tag_add(args):
-    print("cmd_game_tag_add()")
-    print(f"game: {args.game}")
-    print(f"tags: {args.tags}")
-    print(f"db_path: {args.db_path}")
+    if not args.tags:
+        return
+    with open_db(args.db_path) as conn:
+        game_id = get_game_id_by_name(conn, args.game)
+        if game_id is None:
+            args.parser.error(
+                f"Cannot apply tags to unknown game '{args.game}'."
+            )
+
+        distinct_tags = list(dict.fromkeys(args.tags))
+        tag_names_to_ids = get_tag_ids_by_names(conn, distinct_tags)
+        missing = [name for name in distinct_tags if name not in tag_names_to_ids]
+        if missing and not args.create_tags:
+            args.parser.error(
+                f"Unknown tag{'' if len(missing) == 1 else 's'}: {', '.join([f'\'{name}\'' for name in sorted(missing)])}. "
+                "Use '--create-tags' to create missing tags."
+            )
+        with conn:
+            # Because we error early if there are missing tags without the --create-tags flag,
+            # we can safely assume there are no missing tags or we are going to create them
+            success_msg = create_and_apply_tags(conn, game_id, distinct_tags)
+            print(success_msg)
 
 def cmd_game_tag_remove(args):
     print("cmd_game_tag_remove()")
     print(f"game: {args.game}")
     print(f"tags: {args.tags}")
     print(f"db_path: {args.db_path}")
+
+def create_and_apply_tags(conn: sqlite3.Connection, game_id: int, tags: list[str]) -> str:
+    success_msg = ""
+    tags_with_create_flags = add_tags_if_missing(conn, tags)  # e.g. {'coop': (1, False), 'dice rolling': (2, True), 'economic': (3, True)}
+    tags_with_ids = {name: id for name, (id, _was_added) in tags_with_create_flags.items()}  # e.g. {'coop': 1, 'dice rolling': 2, 'economic': 3}
+    tags_with_apply_flags = apply_tags_if_missing(conn, game_id, tags_with_ids)  # e.g. {'coop': False, 'dice rolling': True, 'economic': True}
+    applied = [tag_name for tag_name, was_applied in tags_with_apply_flags.items() if was_applied]  # e.g. ['dice rolling', 'economic']
+    num_not_applied = len(tags_with_ids) - len(applied)
+    if len(applied) == 1:
+        success_msg += f"Applied '{applied[0]}' tag"
+    else:
+        success_msg += f"Applied {len(applied)} tags"
+
+    if num_not_applied > 0:
+        success_msg += f". Skipped {num_not_applied} tag{'' if num_not_applied == 1 else 's'} (already applied)"
+    return success_msg
+
+def estimate_minutes(time_range: tuple[int, int]) -> int:
+    low, high = time_range
+    return round((low + high) / 2)
