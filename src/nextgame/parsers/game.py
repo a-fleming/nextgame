@@ -93,22 +93,24 @@ examples:
     game_delete = game_actions.add_parser(
         "delete",
         parents=parents or [],
-        help="Delete a game from the database"
+        help="Delete games from the database"
     )
 
     game_delete_args = game_delete.add_mutually_exclusive_group(required=True)
     game_delete_args.add_argument(
-        "id",
+        "ids",
         type=validate_positive_integer,
-        nargs="?",
+        nargs="*",
         metavar="GAME_ID",
-        help="ID of the game to delete"
+        help="IDs of the games to delete"
     )
     game_delete_args.add_argument(
         "--name",
         type=validate_game_name,
+        nargs="+",
         metavar="GAME",
-        help="Exact name of the game to delete"
+        dest="names",
+        help="Exact names of the games to delete"
     )
     game_delete.set_defaults(func=cmd_game_delete, parser=game_delete)
 
