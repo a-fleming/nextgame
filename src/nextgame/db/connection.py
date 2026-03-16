@@ -14,11 +14,19 @@ def get_connection(db_path: PathLike) -> sqlite3.Connection:
     db_path = Path(db_path).expanduser()
     db_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # Set autocommit to False to for PEP 249-compliant transaction behavior
-    conn = sqlite3.connect(db_path, autocommit=False, timeout=5.0)
+    # Set autocommit mode that allows foreign key constraints to be enforced
+    conn = sqlite3.connect(
+        db_path,
+        timeout=5.0,
+        autocommit=sqlite3.LEGACY_TRANSACTION_CONTROL,
+    )
+    
+    conn.execute("PRAGMA foreign_keys = ON;") # enforce foreign key constraints
+    fk = conn.execute("PRAGMA foreign_keys;").fetchone()[0]
+    if fk != 1:
+        raise RuntimeError("Failed to enable PRAGMA foreign_keys")
+    conn.execute("PRAGMA busy_timeout = 5000;")
+    conn.row_factory = sqlite3.Row # have rows behave like dicts: row["col"]
     
     logger.info("Opened SQLite connection: %s", db_path)
-    conn.row_factory = sqlite3.Row # have rows behave like dicts: row["col"]
-    conn.execute("PRAGMA foreign_keys = ON;") # enforce foreign key constraints
-    conn.execute("PRAGMA busy_timeout = 5000;")
     return conn
