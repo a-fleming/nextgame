@@ -3,7 +3,7 @@ import sqlite3
 
 from nextgame.commands.common import open_db
 from nextgame.db.queries.games import add_game, delete_games_by_ids, delete_games_by_names, get_game_id_by_name
-from nextgame.db.queries.game_tags import apply_tags_if_missing
+from nextgame.db.queries.game_tags import apply_tags_if_missing, remove_tags_if_applied
 from nextgame.db.queries.tags import add_tags_if_missing, get_tag_ids_by_names
 from nextgame.validation import error_if_tag_options_conflict
 
@@ -104,10 +104,34 @@ def cmd_game_tag_add(args):
             print(success_msg)
 
 def cmd_game_tag_remove(args):
-    print("cmd_game_tag_remove()")
-    print(f"game: {args.game}")
-    print(f"tags: {args.tags}")
-    print(f"db_path: {args.db_path}")
+    if not args.game or not args.tags:
+        return
+    
+    with open_db(args.db_path) as conn:
+        game_id = get_game_id_by_name(conn, args.game)
+        if game_id is None:
+            args.parser.error(
+                f"Cannot remove tags from unknown game '{args.game}'."
+            )
+        distinct_tags = list(dict.fromkeys(args.tags))
+        tags_with_ids = get_tag_ids_by_names(conn, distinct_tags)
+        missing = [name for name in distinct_tags if name not in tags_with_ids]
+        if missing:
+            args.parser.error(
+                f"Unknown tag{'' if len(missing) == 1 else 's'}: {', '.join([f'\'{name}\'' for name in sorted(missing)])}. "
+            )
+        with conn:
+            tags_with_remove_flags = remove_tags_if_applied(conn, game_id, tags_with_ids)  # e.g. {'coop': True, 'dice rolling': False, 'economic': False}
+            removed = [tag_name for tag_name, was_removed in tags_with_remove_flags.items() if was_removed]  # e.g. ['coop']
+            num_not_removed = len(tags_with_ids) - len(removed)
+            if len(removed) == 1:
+                success_msg = f"Removed '{removed[0]}' tag"
+            else:
+                success_msg = f"Removed {len(removed)} tags"
+
+            if num_not_removed > 0:
+                success_msg += f". Skipped {num_not_removed} tag{'' if num_not_removed == 1 else 's'} (not previously applied)"
+        print(success_msg)
 
 def create_and_apply_tags(conn: sqlite3.Connection, game_id: int, tags: list[str]) -> str:
     success_msg = ""
