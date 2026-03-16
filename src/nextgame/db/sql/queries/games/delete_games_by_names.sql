@@ -1,0 +1,2 @@
+DELETE FROM games
+WHERE name IN __IN_CLAUSE__;

@@ -2,7 +2,7 @@ import logging
 import sqlite3
 
 from nextgame.commands.common import open_db
-from nextgame.db.queries.games import add_game, get_game_id_by_name
+from nextgame.db.queries.games import add_game, delete_games_by_ids, delete_games_by_names, get_game_id_by_name
 from nextgame.db.queries.game_tags import apply_tags_if_missing
 from nextgame.db.queries.tags import add_tags_if_missing, get_tag_ids_by_names
 from nextgame.validation import error_if_tag_options_conflict
@@ -43,11 +43,27 @@ def cmd_game_add(args):
         print(success_msg)
 
 def cmd_game_delete(args):
-    print("cmd_game_delete()")
-    print(f"id: {args.id}")
-    print(f"name: {args.name}")
-    print(f"db_path: {args.db_path}")
-    
+    if not args.ids and args.names is None:
+        return
+    with open_db(args.db_path) as conn:
+        with conn:
+            if args.names is not None:  # '--name' flag used
+                games_with_flags = delete_games_by_names(conn, args.names)
+            else: # ID provided; '--name- flag not used
+                games_with_flags = delete_games_by_ids(conn, args.ids)
+            removed = [name for name, was_removed  in games_with_flags.items() if was_removed]
+            missing = [name for name, was_removed  in games_with_flags.items() if not was_removed]
+            msg = f"Deleted {len(removed)} game{'' if len(removed) == 1 else 's'}"
+            if missing:
+                missing_plural = "" if len(missing) == 1 else "s"
+                missing_type = f"{'Game' if args.names is not None else 'ID'}{missing_plural}" 
+                msg += f". {missing_type} not found: "
+                if args.names is not None:
+                    msg += f"{', '.join([f'\'{m}\'' for m in missing])}"  # e.g. "Names not found: 'Catan', 'King of Tokyo', 'Sky Team'"
+                else:
+                    msg += f"{', '.join([f'{m}' for m in missing])}"  # e.g. "IDs not found: 123, 456, 7890"
+        print(msg)
+
 def cmd_game_list(args):
     print("cmd_game_list()")
     print(f"with_tags: {args.with_tags}")
