@@ -61,7 +61,7 @@ def get_game_id_by_name(conn: sqlite3.Connection, name: str) -> int|None:
 
     cur = conn.execute(sql, value)
     res = cur.fetchone()
-    return res["id"] if res is not None else None
+    return res["game_id"] if res is not None else None
 
 def get_game_ids_by_names(conn: sqlite3.Connection, names: list[str]) -> dict[str, int]:
     sql = load_sql_query(SELECT_GAME_IDS_BY_NAMES_SQL)
