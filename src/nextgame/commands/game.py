@@ -3,7 +3,7 @@ import sqlite3
 
 from nextgame.commands.common import open_db
 from nextgame.db.queries.games import add_game, delete_games_by_ids, delete_games_by_names, get_game_id_by_name
-from nextgame.db.queries.game_tags import apply_tags_if_missing, remove_tags_if_applied
+from nextgame.db.queries.game_tags import apply_tags_if_missing, remove_tags_from_game_if_applied
 from nextgame.db.queries.tags import add_tags_if_missing, get_tag_ids_by_names
 from nextgame.validation import error_if_tag_options_conflict
 
@@ -121,7 +121,7 @@ def cmd_game_tag_remove(args):
                 f"Unknown tag{'' if len(missing) == 1 else 's'}: {', '.join([f'\'{name}\'' for name in sorted(missing)])}. "
             )
         with conn:
-            tags_with_remove_flags = remove_tags_if_applied(conn, game_id, tags_with_ids)  # e.g. {'coop': True, 'dice rolling': False, 'economic': False}
+            tags_with_remove_flags = remove_tags_from_game_if_applied(conn, game_id, tags_with_ids)  # e.g. {'coop': True, 'dice rolling': False, 'economic': False}
             removed = [tag_name for tag_name, was_removed in tags_with_remove_flags.items() if was_removed]  # e.g. ['coop']
             num_not_removed = len(tags_with_ids) - len(removed)
             if len(removed) == 1:

@@ -2,12 +2,15 @@ import logging
 import sqlite3
 
 from nextgame.db.queries.common import load_sql_query, populate_in_clause
+from nextgame.db.queries.tags import get_tag_ids_by_names
 
 logger = logging.getLogger(__name__)
 
+DELETE_TAGS_FROM_ALL_GAMES_BY_TAG_IDS = "game_tags/delete_tags_from_all_games_by_tag_ids.sql"
 DELETE_TAGS_FROM_GAME_BY_TAG_ID = "game_tags/delete_tags_from_game_by_tag_ids.sql"
 INSERT_GAME_TAG_SQL = "game_tags/insert_game_tag.sql"
 SELECT_TAGS_BY_GAME_ID_SQL = "game_tags/select_tags_by_game_id.sql"
+SELECT_USAGE_BY_TAG_NAMES = "game_tags/select_usage_by_tag_names.sql"
 
 def apply_tags_if_missing(conn: sqlite3.Connection, game_id: int, tags_with_ids: dict[str, int]) -> dict[str, bool]:
     # e.g. tags_with_ids == {'coop': 1, 'dice rolling': 2, 'economic': 3}
@@ -46,7 +49,18 @@ def get_tags_by_game_id(conn: sqlite3.Connection, game_id: int) -> dict[str, int
     rows = cur.fetchall()
     return {row['tag_name']: row['tag_id'] for row in rows}
 
-def remove_tags_if_applied(conn: sqlite3.Connection, game_id: int, tags_with_ids: dict[str, int]) -> dict[str, bool]:
+def get_uses_by_tag_names(conn: sqlite3.Connection, tag_names: list[str]) -> dict[str, int]:
+    if not tag_names:
+        logger.info("No tags provided")
+        return {}
+    
+    sql = load_sql_query(SELECT_USAGE_BY_TAG_NAMES)
+    sql = populate_in_clause(sql, tag_names)
+    cur = conn.execute(sql, tag_names)
+    rows = cur.fetchall()
+    return{row['tag_name']: row['usage'] for row in rows}
+
+def remove_tags_from_game_if_applied(conn: sqlite3.Connection, game_id: int, tags_with_ids: dict[str, int]) -> dict[str, bool]:
     # e.g. tags_with_ids == {'coop': 1, 'dice rolling': 2, 'economic': 3}
     if not game_id or not tags_with_ids:
         return {}
@@ -68,3 +82,14 @@ def remove_tags_if_applied(conn: sqlite3.Connection, game_id: int, tags_with_ids
     # Return the merged dictionary of removed and missing tags with removal results
     return removed_with_flags | missing_with_flags
 
+def remove_tags_from_all_games(conn: sqlite3.Connection, tags: list[str]) -> None:
+    if not tags:
+        logger.info("No tags provided")
+        return
+
+    tags_with_ids = get_tag_ids_by_names(conn, tags)
+    values = list(tags_with_ids.values())
+
+    sql = load_sql_query(DELETE_TAGS_FROM_ALL_GAMES_BY_TAG_IDS)
+    sql = populate_in_clause(sql, values)
+    conn.execute(sql, values)
