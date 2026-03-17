@@ -53,6 +53,11 @@ examples:
         metavar="TAG",
         help="Names of tags to delete"
     )
+    tag_delete.add_argument(
+        "--force",
+        action="store_true",
+        help="Delete tags and remove from any games to which they are applied"
+    )
     tag_delete.set_defaults(func=cmd_tag_delete, parser=tag_delete)
 
     tag_list = tag_actions.add_parser(
