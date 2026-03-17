@@ -18,7 +18,7 @@ def cmd_tag_add(args):
                 print(f"Tag already exists: '{tag}'")
         else:
             # Filter to only keep values that were not added (already existed)
-            existing = list(filter(lambda t: not tags_with_flags[t][1], tags_with_flags))
+            existing = [name for name, (_id, is_missing) in tags_with_flags.items() if not is_missing]
             num_added = len(tags_with_flags) - len(existing)
             msg = f"Added {len(tags_with_flags) - len(existing)} tag{'' if num_added == 1 else 's'}"
             if existing:
@@ -31,7 +31,6 @@ def cmd_tag_delete(args):
 
     with open_db(args.db_path) as conn:
         distinct_tags = list(dict.fromkeys(args.tags))
-    
         applied_with_counts: dict[str, int] = get_uses_by_tag_names(conn, distinct_tags)
 
         if applied_with_counts and not args.force:
