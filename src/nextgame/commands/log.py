@@ -1,7 +1,7 @@
 import logging
 
 from nextgame.commands.common import open_db
-from nextgame.db.queries.sessions import add_session
+from nextgame.db.queries.sessions import add_session, get_all_sessions
 
 logger = logging.getLogger(__name__)
 
@@ -20,5 +20,49 @@ def cmd_log_delete(args):
     print(f"db_path: {args.db_path}")
 
 def cmd_log_list(args):
-    print("cmd_log_list()")
-    print(f"db_path: {args.db_path}")
+    with open_db(args.db_path) as conn:
+        sessions = get_all_sessions(conn)
+    if not sessions:
+        print("No sessions found")
+        return
+    print_sessions_formatted(sessions)
+
+def print_sessions_formatted(sessions: dict[int, dict]) -> None:
+    headings = ["ID", "Date", "Game Name", "Minutes", "Players"]
+    column_widths = [len(h) for h in headings]
+    column_widths[1] = 10  # dates are standardized
+    longest_game_session_id = max(sessions, key=lambda s_id:len(sessions[s_id]["game_name"]))  # need to compute length of game_name
+    length_of_longest_game_name = len(sessions[longest_game_session_id]["game_name"])
+    column_widths[2] = max(length_of_longest_game_name, column_widths[2])
+    
+    heading_str = ""
+    for idx, heading in enumerate(headings):
+        heading_str += f"{heading}{' '*(column_widths[idx] - len(heading))}"
+        if idx < len(headings) - 1:
+            heading_str += "|"
+    print(heading_str)
+    print("-"*len(heading_str))
+    
+    for session_id in sorted(sessions):
+        line_parts = []
+        session = sessions[session_id]
+        session_str = f"{session_id}{' '*(column_widths[0] - len(str(session_id)))}"
+        line_parts.append(session_str)
+
+        played_on = session['played_on']
+        played_on_str = f"{played_on + ' '*(column_widths[1] - len(played_on))}"
+        line_parts.append(played_on_str)
+        
+        game = session["game_name"]
+        game_str = f"{game + ' '*(column_widths[2] - len(game))}"
+        line_parts.append(game_str)
+        
+        duration_minutes = session['duration_minutes']
+        duration_str = f"{duration_minutes}{' '*(column_widths[3] - len(str(duration_minutes)))}"
+        line_parts.append(duration_str)
+
+        player_count = session['player_count']
+        player_str = f"{player_count}{' '*(column_widths[4] - len(str(player_count)))}"
+        line_parts.append(player_str)
+        
+        print("|".join(line_parts))
