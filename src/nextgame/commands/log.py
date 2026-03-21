@@ -1,7 +1,7 @@
 import logging
 
 from nextgame.commands.common import open_db
-from nextgame.db.queries.sessions import add_session, get_all_sessions
+from nextgame.db.queries.sessions import add_session, get_all_sessions, delete_sessions
 
 logger = logging.getLogger(__name__)
 
@@ -15,9 +15,19 @@ def cmd_log_add(args):
         print(f"Logged session. ID: {session_id}")
 
 def cmd_log_delete(args):
-    print("cmd_log_delete()")
-    print(f"id: {args.id}")
-    print(f"db_path: {args.db_path}")
+    if not args.ids:
+        return
+    with open_db(args.db_path) as conn:
+        deleted_with_flags = delete_sessions(conn, args.ids)
+        deleted = [session_id for session_id, was_deleted  in deleted_with_flags.items() if was_deleted]
+        missing = [str(session_id) for session_id, was_deleted  in deleted_with_flags.items() if not was_deleted]
+        if deleted:
+            msg = f"Deleted {len(deleted)} session{'' if len(deleted) == 1 else 's'}."
+        else:
+            msg = "No sessions deleted."
+        if missing:
+            msg += f" Not found: {', '.join(missing)}"
+        print(msg)
 
 def cmd_log_list(args):
     with open_db(args.db_path) as conn:

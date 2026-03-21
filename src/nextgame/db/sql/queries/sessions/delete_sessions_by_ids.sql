@@ -1,0 +1,2 @@
+DELETE FROM sessions
+WHERE id IN __IN_CLAUSE__;

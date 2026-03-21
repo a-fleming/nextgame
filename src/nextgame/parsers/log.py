@@ -17,8 +17,8 @@ examples:
   # List sessions
   nextgame log list
 
-  # Delete a session by ID
-  nextgame log delete 42
+  # Delete sessions by IDs
+  nextgame log delete 15 42
 """,
     formatter_class=argparse.RawDescriptionHelpFormatter
     )
@@ -62,11 +62,12 @@ examples:
     log_delete = log_actions.add_parser(
         "delete",
         parents=parents or [],
-        help="Delete a session from the database"
+        help="Delete sessions from the database"
     )
     log_delete.add_argument(
-        "id",
+        "ids",
         type=validate_positive_integer,
+        nargs="+",
         metavar="SESSION_ID",
         help="ID of session"
     )
