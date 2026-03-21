@@ -45,8 +45,6 @@ def delete_tags(conn: sqlite3.Connection, names: list[str]) -> dict[str, bool]:
     missing = [n for n in names if n not in existing]
 
     if existing:
-        # TODO: check for tags in use by games and, if found, fail with helpful message
-
         sql = load_sql_query(DELETE_TAGS_SQL)
         sql = populate_in_clause(sql, existing)
         _cur = conn.execute(sql, existing)
