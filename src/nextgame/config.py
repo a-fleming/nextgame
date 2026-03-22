@@ -26,7 +26,9 @@ class Settings:
     log_level: str = "INFO"
 
 def load_settings() -> Settings:
-    db_path_str = os.getenv("NEXTGAME_DB_PATH")
+    db_path_str = get_demo_db_path_if_active()
+    if not db_path_str:
+        db_path_str = os.getenv("NEXTGAME_DB_PATH")
     db_path = Path(db_path_str) if db_path_str else _default_db_path()
     
     log_level = os.getenv("NEXTGAME_LOG_LEVEL", "INFO").upper()
@@ -35,5 +37,11 @@ def load_settings() -> Settings:
     log_path = Path(log_path_str) if log_path_str else _default_log_path()
 
     return Settings(db_path=db_path, log_path=log_path, log_level=log_level)
+
+def get_demo_db_path_if_active() -> str:
+    marker_path = Path.home() / ".nextgame" / "demo_active"
+    if not marker_path.exists():
+        return ""
+    return marker_path.read_text()
 
 settings = load_settings()
