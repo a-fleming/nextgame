@@ -158,6 +158,7 @@ def estimate_minutes(time_range: tuple[int, int]) -> int:
 def print_games_formatted(games: list[dict]) -> None:
     if not games:
         print("No games found")
+        return
     
     # Map to database columns to printed headings
     column_headings = {
