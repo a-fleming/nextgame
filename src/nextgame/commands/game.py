@@ -3,7 +3,7 @@ import sqlite3
 
 from nextgame.commands.common import open_db
 from nextgame.db.queries.games import add_game, delete_games_by_ids, delete_games_by_names, get_all_games, get_game_id_by_name
-from nextgame.db.queries.game_tags import apply_tags_if_missing, remove_tags_from_game_if_applied
+from nextgame.db.queries.game_tags import apply_tags_if_missing, get_tags_by_game_id, remove_tags_from_game_if_applied
 from nextgame.db.queries.tags import add_tags_if_missing, get_tag_ids_by_names
 from nextgame.validation import error_if_tag_options_conflict
 
@@ -69,7 +69,13 @@ def cmd_game_delete(args):
 def cmd_game_list(args):
     with open_db(args.db_path) as conn:
         games = get_all_games(conn)
-        print_games_formatted(games)
+        game_tags: dict[int, list[str]] = {}  # mapping from game_id to list of tag names
+        if args.with_tags:
+            for game in games:
+                game_id = game["game_id"]
+                tags = list(get_tags_by_game_id(conn, game_id))  # only keep tag names
+                game_tags[game_id] = tags
+        print_games_formatted(games, game_tags)
 
 def cmd_game_search(args):
     error_if_tag_options_conflict(args)
@@ -155,7 +161,7 @@ def estimate_minutes(time_range: tuple[int, int]) -> int:
     low, high = time_range
     return round((low + high) / 2)
 
-def print_games_formatted(games: list[dict]) -> None:
+def print_games_formatted(games: list[dict], tags: dict[int, list[str]]) -> None:
     if not games:
         print("No games found")
         return
@@ -167,27 +173,36 @@ def print_games_formatted(games: list[dict]) -> None:
         "players": "Players",
         "est_avg_minutes": "Est Avg Minutes",
         "weight": "Weight",
+        "tags": "Tags",
     }
 
     # Instead of having two columns for min_players and max_players, we will have a single Players
     # column that combines the two values as a range in the form 'min - max' 
     column_keys = [key for key in games[0].keys() if key not in ["min_players", "max_players"]]
     column_keys.insert(2, "players")
+    if tags:
+        column_keys.append("tags")
 
-    players = []  # List to keep track of the combined player strings
+    players_strs = []  # List to keep track of the combined player strings
+    tag_strs = []  # List to keep track of the joined tags
 
     # Determine column widths based on the longest item in each column (including headings)
     column_widths = {h: len(column_headings[h]) for h in column_keys}
     for game in games:
-        for h in column_keys:
-            if h == "players":
+        game_id = game["game_id"]
+        for key in column_keys:
+            if key == "players":
                 combined = f"{game["min_players"]} - {game["max_players"]}"
                 item_width = len(combined)
-                players.append(combined)
+                players_strs.append(combined)
+            elif key == "tags":
+                tag_str = ", ".join(sorted(tags[game_id]))
+                item_width = len(tag_str)
+                tag_strs.append(tag_str)
             else:
-                item_width = len(str(game[h]))
-            if item_width > column_widths[h]:
-                column_widths[h] = item_width
+                item_width = len(str(game[key]))
+            if item_width > column_widths[key]:
+                column_widths[key] = item_width
 
     # Pad the headings with trailing spaces, if needed
     heading_str = ""
@@ -201,14 +216,16 @@ def print_games_formatted(games: list[dict]) -> None:
     
     for idx, game in enumerate(games):
         line_parts = []
-        for h in column_keys:
-            if h == "players":
-                part = players[idx]
+        for key in column_keys:
+            if key == "players":
+                part = players_strs[idx]
+            elif key == "tags":
+                part = tag_strs[idx]
             else:
-                part = game[h]
+                part = game[key]
                 if part is None:
                     part = ""
             # Pad the column element with trailing spaces, if needed
-            part_str = f"{part}{' '*(column_widths[h] - len(str(part)))}"
+            part_str = f"{part}{' '*(column_widths[key] - len(str(part)))}"
             line_parts.append(part_str)
         print("|".join(line_parts))
