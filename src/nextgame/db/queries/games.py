@@ -4,6 +4,7 @@ from nextgame.db.queries.common import load_sql_query, populate_in_clause
 
 DELETE_GAMES_BY_NAMES_SQL = "games/delete_games_by_names.sql"
 INSERT_GAME_SQL = "games/insert_game.sql"
+SELECT_ALL_GAMES_SQL = "games/select_all_games.sql"
 SELECT_GAME_ID_BY_NAME_SQL = "games/select_game_id_by_name.sql"
 SELECT_GAME_IDS_BY_NAMES_SQL = "games/select_game_ids_by_names.sql"
 SELECT_GAME_NAMES_BY_IDS_SQL = "games/select_game_names_by_ids.sql"
@@ -54,6 +55,11 @@ def delete_games_by_names(conn: sqlite3.Connection, names: list[str]) -> dict[st
 
     # Return the merged dictionary of existing and missing tags with delete results
     return existing_with_flag | missing_with_flag
+
+def get_all_games(conn: sqlite3.Connection) -> list[dict]:
+    sql = load_sql_query(SELECT_ALL_GAMES_SQL)
+    cur = conn.execute(sql)
+    return cur.fetchall()
 
 def get_game_id_by_name(conn: sqlite3.Connection, name: str) -> int|None:
     sql = load_sql_query(SELECT_GAME_ID_BY_NAME_SQL)

@@ -2,12 +2,14 @@ import logging
 import sqlite3
 
 from nextgame.commands.common import open_db
-from nextgame.db.queries.games import add_game, delete_games_by_ids, delete_games_by_names, get_game_id_by_name
+from nextgame.db.queries.games import add_game, delete_games_by_ids, delete_games_by_names, get_all_games, get_game_id_by_name
 from nextgame.db.queries.game_tags import apply_tags_if_missing, remove_tags_from_game_if_applied
 from nextgame.db.queries.tags import add_tags_if_missing, get_tag_ids_by_names
 from nextgame.validation import error_if_tag_options_conflict
 
 logger = logging.getLogger(__name__)
+
+
 def cmd_game_add(args):
     est_avg_minutes = estimate_minutes(args.time)
     players_min, players_max = args.players
@@ -65,10 +67,10 @@ def cmd_game_delete(args):
         print(msg)
 
 def cmd_game_list(args):
-    print("cmd_game_list()")
-    print(f"with_tags: {args.with_tags}")
-    print(f"db_path: {args.db_path}")
-    
+    with open_db(args.db_path) as conn:
+        games = get_all_games(conn)
+        print_games_formatted(games)
+
 def cmd_game_search(args):
     error_if_tag_options_conflict(args)
     print("cmd_game_search()")
@@ -152,3 +154,60 @@ def create_and_apply_tags(conn: sqlite3.Connection, game_id: int, tags: list[str
 def estimate_minutes(time_range: tuple[int, int]) -> int:
     low, high = time_range
     return round((low + high) / 2)
+
+def print_games_formatted(games: list[dict]) -> None:
+    if not games:
+        print("No games found")
+    
+    # Map to database columns to printed headings
+    column_headings = {
+        "game_id": "ID", 
+        "name": "Name",
+        "players": "Players",
+        "est_avg_minutes": "Est Avg Minutes",
+        "weight": "Weight",
+    }
+
+    # Instead of having two columns for min_players and max_players, we will have a single Players
+    # column that combines the two values as a range in the form 'min - max' 
+    column_keys = [key for key in games[0].keys() if key not in ["min_players", "max_players"]]
+    column_keys.insert(2, "players")
+
+    players = []  # List to keep track of the combined player strings
+
+    # Determine column widths based on the longest item in each column (including headings)
+    column_widths = {h: len(column_headings[h]) for h in column_keys}
+    for game in games:
+        for h in column_keys:
+            if h == "players":
+                combined = f"{game["min_players"]} - {game["max_players"]}"
+                item_width = len(combined)
+                players.append(combined)
+            else:
+                item_width = len(str(game[h]))
+            if item_width > column_widths[h]:
+                column_widths[h] = item_width
+
+    # Pad the headings with trailing spaces, if needed
+    heading_str = ""
+    for idx, key in enumerate(column_keys):
+        heading = column_headings[key]
+        heading_str += f"{heading}{' '*(column_widths[key] - len(heading))}"
+        if idx < len(column_keys) - 1:
+            heading_str += "|"
+    print(heading_str)
+    print("-"*len(heading_str))
+    
+    for idx, game in enumerate(games):
+        line_parts = []
+        for h in column_keys:
+            if h == "players":
+                part = players[idx]
+            else:
+                part = game[h]
+                if part is None:
+                    part = ""
+            # Pad the column element with trailing spaces, if needed
+            part_str = f"{part}{' '*(column_widths[h] - len(str(part)))}"
+            line_parts.append(part_str)
+        print("|".join(line_parts))
