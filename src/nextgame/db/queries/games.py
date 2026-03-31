@@ -56,7 +56,7 @@ def delete_games_by_names(conn: sqlite3.Connection, names: list[str]) -> dict[st
     # Return the merged dictionary of existing and missing tags with delete results
     return existing_with_flag | missing_with_flag
 
-def get_all_games(conn: sqlite3.Connection) -> list[dict]:
+def get_all_games(conn: sqlite3.Connection) -> list[sqlite3.Row]:
     sql = load_sql_query(SELECT_ALL_GAMES_SQL)
     cur = conn.execute(sql)
     return cur.fetchall()
@@ -91,7 +91,7 @@ def get_games_by_criteria(conn: sqlite3.Connection,
                           min_weight: float|None,
                           max_weight: float|None,
                           incl_tag_ids: list[int],
-                          excl_tag_ids: list[int]) -> list[dict]:
+                          excl_tag_ids: list[int]) -> list[sqlite3.Row]:
     # Remove duplicates
     incl_tag_ids = list(dict.fromkeys(incl_tag_ids))
     excl_tag_ids = list(dict.fromkeys(excl_tag_ids))

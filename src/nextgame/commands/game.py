@@ -182,7 +182,7 @@ def estimate_minutes(time_range: tuple[int, int]) -> int:
     low, high = time_range
     return round((low + high) / 2)
 
-def print_games_formatted(games: list[dict], tags: dict[int, list[str]]) -> None:
+def print_games_formatted(games: list[sqlite3.Row], tags: dict[int, list[str]]) -> None:
     if not games:
         print("No games found")
         return
