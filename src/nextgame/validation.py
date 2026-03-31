@@ -9,6 +9,13 @@ def error_if_tag_options_conflict(args):
     if conflicts:
         args.parser.error(f"Tags cannot be both included and excluded: {', '.join(sorted(conflicts))}")
 
+def error_if_weight_options_conflict(args):
+    # prevent minimum weight from being higher than maximum
+    if args.min_weight is None or args.max_weight is None:
+        return
+    if args.min_weight > args.max_weight:
+        args.parser.error(f"--min-weight cannot be greater than --max-weight")
+
 def is_leap_year(year):
     if year % 4 == 0:
         if year % 100 == 0:

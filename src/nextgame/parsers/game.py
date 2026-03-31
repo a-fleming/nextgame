@@ -144,8 +144,12 @@ examples:
   nextgame game search --include-tags coop "deck builder"
   nextgame game search --exclude-tags "take that"
 
+  # Weight
+  nextgame game search --max-weight 2.7
+  nextgame game search --min-weight 2.5 --max-weight 3.5
+
   # Combined filters
-  nextgame game search --players 4 --time 60-90 --weight 2.5 --include-tags coop
+  nextgame game search --players 4 --time 60-90 --min-weight 2.5 --include-tags coop
 
   # Invalid: same tag in include + exclude (this should error)
   nextgame game search --include-tags coop --exclude-tags coop
@@ -173,15 +177,20 @@ examples:
         help="Tags the game must have (use quotes for multi-word tags, e.g. 'deck builder' coop)"
     )
     game_search.add_argument(
+        "--max-weight",
+        type=validate_float_one_to_five,
+        help="Maximum complexity rating on a scale from 1.0 to 5.0"
+    )
+    game_search.add_argument(
+        "--min-weight",
+        type=validate_float_one_to_five,
+        help="Minimum complexity rating on a scale from 1.0 to 5.0"
+    )
+    game_search.add_argument(
         "--time",
         type=validate_game_time,
         metavar="MINUTES|MIN-MAX",
         help="Estimated play time in minutes: Single value uses ±20%% (minimum ±10 min); MIN-MAX is inclusive"
-    )
-    game_search.add_argument(
-        "--weight",
-        type=validate_float_one_to_five,
-        help="Complexity rating on a scale from 1.0 to 5.0"
     )
     game_search.set_defaults(func=cmd_game_search, parser=game_search)
     

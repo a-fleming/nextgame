@@ -2,10 +2,10 @@ import logging
 import sqlite3
 
 from nextgame.commands.common import open_db
-from nextgame.db.queries.games import add_game, delete_games_by_ids, delete_games_by_names, get_all_games, get_game_id_by_name
+from nextgame.db.queries.games import add_game, delete_games_by_ids, delete_games_by_names, get_all_games, get_game_id_by_name, get_games_by_criteria
 from nextgame.db.queries.game_tags import apply_tags_if_missing, get_tags_by_game_id, remove_tags_from_game_if_applied
 from nextgame.db.queries.tags import add_tags_if_missing, get_tag_ids_by_names
-from nextgame.validation import error_if_tag_options_conflict
+from nextgame.validation import error_if_tag_options_conflict, error_if_weight_options_conflict
 
 logger = logging.getLogger(__name__)
 
@@ -79,13 +79,34 @@ def cmd_game_list(args):
 
 def cmd_game_search(args):
     error_if_tag_options_conflict(args)
-    print("cmd_game_search()")
-    print(f"players: {args.players}")
-    print(f"time: {args.time}")
-    print(f"weight: {args.weight}")
-    print(f"include_tags: {args.include_tags}")
-    print(f"exclude_tags: {args.exclude_tags}")
-    print(f"db_path: {args.db_path}")
+    error_if_weight_options_conflict(args)
+
+    with open_db(args.db_path) as conn:
+        incl_tag_ids = []
+        if args.include_tags:
+            incl_tags = list(dict.fromkeys(args.include_tags))  # remove duplicates
+            incl_tag_names_to_ids = get_tag_ids_by_names(conn, incl_tags)
+            unknown = [tag_name for tag_name in incl_tags if tag_name not in incl_tag_names_to_ids]
+            if unknown:
+                args.parser.error(
+                f"Unknown include tag{'' if len(unknown) == 1 else 's'} specified: {', '.join(unknown)}."
+            )
+            incl_tag_ids.extend(incl_tag_names_to_ids.values())
+
+        excl_tag_ids = []
+        if args.exclude_tags:
+            excl_tags = list(dict.fromkeys(args.exclude_tags))  # remove duplicates
+            excl_tag_names_to_ids = get_tag_ids_by_names(conn, excl_tags)
+            unknown = [tag_name for tag_name in excl_tags if tag_name not in excl_tag_names_to_ids]
+            if unknown:
+                args.parser.error(
+                f"Unknown exclude tag{'' if len(unknown) == 1 else 's'} specified: {', '.join(unknown)}."
+            )
+            excl_tag_ids.extend(excl_tag_names_to_ids.values())
+
+        games = get_games_by_criteria(conn, args.players, args.time, args.min_weight, args.max_weight, incl_tag_ids, excl_tag_ids)
+        game_tags: dict[int, list[str]] = {}
+        print_games_formatted(games, game_tags )
 
 def cmd_game_tag_add(args):
     if not args.tags:

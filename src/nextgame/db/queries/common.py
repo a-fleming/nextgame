@@ -3,6 +3,7 @@ from importlib.resources.abc import Traversable
 from pathlib import Path
 
 IN_CLAUSE_PLACEHOLDER = "__IN_CLAUSE__"
+WHERE_CLAUSE_PLACEHOLDER = "__WHERE_CLAUSE__"
 
 
 def load_sql_query(relative_path: Path|str) -> str:
@@ -19,5 +20,11 @@ def load_sql(file_path: Traversable) -> str:
     return file_path.read_text(encoding="utf-8")
 
 def populate_in_clause(sql: str, items: list[any]) -> str:
-    placeholder = f"({','.join(['?'] * len(items))})"
-    return sql.replace(IN_CLAUSE_PLACEHOLDER, placeholder)
+    in_clause = f"({','.join(['?'] * len(items))})"
+    return sql.replace(IN_CLAUSE_PLACEHOLDER, in_clause)
+
+def populate_where_clause(sql: str, item_strs: list[str]):
+    if not item_strs:
+        item_strs.append("1=1")  # ensure WHERE clause gets populated
+    where_clause = ' AND '.join(item_strs)
+    return sql.replace(WHERE_CLAUSE_PLACEHOLDER, where_clause)
