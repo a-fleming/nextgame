@@ -12,7 +12,7 @@ def add_game_area(area_parsers, parents=None):
         epilog="""
 examples:
   # Add + list
-  nextgame game add "Catan" --players 3-4 --time 60 --tags "euro game" trading --weight 2.3
+  nextgame game add "Catan" --players 3-4 --time 60 --tags economic trading --weight 2.3
   nextgame game list
   nextgame game list --with-tags
 
@@ -21,11 +21,11 @@ examples:
   nextgame game delete --name "Catan"
 
   # Search (quote multi-word tags)
-  nextgame game search --players 4 --include-tags coop
-  nextgame game search --time 60 --include-tags "deck builder" coop --exclude-tags "take that"
+  nextgame game search --players 4 --include-tags cooperative
+  nextgame game search --time 40 --include-tags race --exclude-tags "take that"
 
   # Add/remove tags on an existing game
-  nextgame game tag add "Catan" trading "euro game"
+  nextgame game tag add "Catan" income trading
   nextgame game tag remove "Catan" trading
 """,
     formatter_class=argparse.RawDescriptionHelpFormatter
@@ -44,10 +44,10 @@ examples:
   nextgame game add "Catan" --players 3-4 --time 60
 
   # Optional: tags + weight (quote multi-word tags)
-  nextgame game add "Catan" --players 3-4 --time 60 --tags "euro game" trading --weight 2.3
+  nextgame game add "Catan" --players 3-4 --time 60 --tags income trading --weight 2.3
 
   # Ranges are allowed for players/time
-  nextgame game add "Nemesis" --players 1-5 --time 90-180 --tags coop "hidden roles" --weight 3.5
+  nextgame game add "Nemesis" --players 1-5 --time 90-180 --tags "hidden roles" --weight 3.5
 """,
     formatter_class=argparse.RawDescriptionHelpFormatter
     )
@@ -141,7 +141,7 @@ examples:
   nextgame game search --time 60-90
 
   # Tags (quote multi-word tags)
-  nextgame game search --include-tags coop "deck builder"
+  nextgame game search --include-tags cooperative deduction
   nextgame game search --exclude-tags "take that"
 
   # Weight
@@ -149,10 +149,10 @@ examples:
   nextgame game search --min-weight 2.5 --max-weight 3.5
 
   # Combined filters
-  nextgame game search --players 4 --time 60-90 --min-weight 2.5 --include-tags coop
+  nextgame game search --players 6 --time 30-60 --max-weight 2.5 --include-tags "party game"
 
   # Invalid: same tag in include + exclude (this should error)
-  nextgame game search --include-tags coop --exclude-tags coop
+  nextgame game search --include-tags income --exclude-tags income
 """,
     formatter_class=argparse.RawDescriptionHelpFormatter
     )

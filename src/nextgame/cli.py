@@ -20,9 +20,9 @@ def build_parser() -> argparse.ArgumentParser:
 examples:
   nextgame init --db-path test.db
   nextgame demo
-  nextgame game add "Catan" --players 3-4 --time 60 --tags "euro game" trading
+  nextgame game add "Catan" --players 3-4 --time 60 --tags "dice rolling" trading
   nextgame log add "Catan" --date 2025-11-15 --players 4 --time 75
-  nextgame recommend 4 --time 60-90 --include-tags coop
+  nextgame recommend 6 --time 30-60 --include-tags "party game"
 """,
     formatter_class=argparse.RawDescriptionHelpFormatter
     )

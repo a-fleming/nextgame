@@ -18,11 +18,11 @@ examples:
   nextgame recommend 4 --time 60-90 --weight 2.0
 
   # Tag filters (quote multi-word tags)
-  nextgame recommend 4 --include-tags coop "deck builder"
+  nextgame recommend 5 --include-tags deduction "party game"
   nextgame recommend 4 --exclude-tags "take that"
 
   # Invalid: same tag in include + exclude (this should error)
-  nextgame recommend 4 --include-tags coop --exclude-tags coop
+  nextgame recommend 4 --include-tags income --exclude-tags income
 """,
     formatter_class=argparse.RawDescriptionHelpFormatter
     )
