@@ -7,6 +7,7 @@ DELETE_SESSIONS_BY_IDS_SQL = "sessions/delete_sessions_by_ids.sql"
 INSERT_SESSION_SQL = "sessions/insert_session.sql"
 SELECT_ALL_SESSIONS_SQL = "sessions/select_all_sessions.sql"
 SELECT_SESSIONS_BY_IDS_SQL = "sessions/select_sessions_by_ids.sql"
+SELECT_ALL_SESSION_COUNTS_AND_RECENT_PLAYS_SQL = "sessions/select_all_session_counts_and_recent_plays.sql"
 
 def add_session(conn: sqlite3.Connection, game_name: str, player_count: int, duration_minutes: int, played_on: tuple) -> int:
     game_id = get_game_id_by_name(conn, game_name)
@@ -46,6 +47,15 @@ def get_all_sessions(conn: sqlite3.Connection) -> dict[int, dict]:
         'player_count': row['player_count'],
         'duration_minutes': row['duration_minutes'],
      } for row in rows}
+
+def get_total_sessions_and_recent_play_by_game(conn: sqlite3.Connection) -> dict[str, dict]:
+    sql = load_sql_query(SELECT_ALL_SESSION_COUNTS_AND_RECENT_PLAYS_SQL)
+    cur = conn.execute(sql)
+    rows = cur.fetchall()
+    return {row['game_name']: {
+        'total_sessions': row['total_sessions'],
+        'last_played_on': row['last_played_on'],
+    } for row in rows}
 
 def get_sessions_by_ids(conn: sqlite3.Connection, ids: list[int]) -> dict[int, dict]:
     if not ids:
