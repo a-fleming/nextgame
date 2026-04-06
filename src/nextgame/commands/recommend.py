@@ -144,7 +144,7 @@ def compute_last_played_on_score(game_name: str, game_sessions_by_name: dict[str
         point_deduction = MAX_CATEGORY_POINTS * recency_penalty_pct
         return max(MAX_CATEGORY_POINTS - point_deduction, 0)  # prevent negative score
 
-def compute_time_score(game_time: int, time_range: tuple) -> float:
+def compute_time_score(game_time: int, time_range: tuple[int, int]) -> float:
     time_lower_limit, time_upper_limit = time_range
     if time_lower_limit <= game_time <= time_upper_limit:
         time_difference = 0
