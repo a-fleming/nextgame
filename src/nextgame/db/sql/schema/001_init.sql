@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS games (
     name TEXT NOT NULL UNIQUE,
     min_players INTEGER NOT NULL CHECK (min_players >= 1),
     max_players INTEGER NOT NULL,
-    est_avg_minutes FLOAT NOT NULL CHECK (est_avg_minutes > 0),
+    est_avg_minutes INT NOT NULL CHECK (est_avg_minutes > 0),
     weight FLOAT,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now')),
