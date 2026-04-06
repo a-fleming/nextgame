@@ -1,6 +1,7 @@
 import logging
 
 from nextgame.commands.common import open_db
+from nextgame.db.queries.games import get_game_by_name
 from nextgame.db.queries.sessions import add_session, get_all_sessions, delete_sessions
 
 logger = logging.getLogger(__name__)
@@ -11,7 +12,16 @@ def cmd_log_add(args):
     
     with open_db(args.db_path) as conn:
         with conn:
-            session_id = add_session(conn, args.game, args.players, args.time, args.date)
+            # Validate specified game
+            game = get_game_by_name(conn, args.game)
+            if not game:
+                args.parser.error(f"Unknown game specified: '{args.game}'.")
+            min_players = game["min_players"]
+            max_players = game["max_players"]
+            if not (min_players <= args.players <= max_players):
+                args.parser.error(f"Invalid player count. '{args.game}' supports {min_players}-{max_players} players.")
+            
+            session_id = add_session(conn, game["game_id"], args.players, args.time, args.date)
         print(f"Logged session. ID: {session_id}")
 
 def cmd_log_delete(args):

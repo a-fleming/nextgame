@@ -9,8 +9,7 @@ SELECT_ALL_SESSIONS_SQL = "sessions/select_all_sessions.sql"
 SELECT_SESSIONS_BY_IDS_SQL = "sessions/select_sessions_by_ids.sql"
 SELECT_ALL_SESSION_COUNTS_AND_RECENT_PLAYS_SQL = "sessions/select_all_session_counts_and_recent_plays.sql"
 
-def add_session(conn: sqlite3.Connection, game_name: str, player_count: int, duration_minutes: int, played_on: tuple) -> int:
-    game_id = get_game_id_by_name(conn, game_name)
+def add_session(conn: sqlite3.Connection, game_id: int, player_count: int, duration_minutes: int, played_on: tuple) -> int:
     y, m, d = played_on
     formatted_played_on = f"{y}-{m:02d}-{d:02d}"
     sql = load_sql_query(INSERT_SESSION_SQL)

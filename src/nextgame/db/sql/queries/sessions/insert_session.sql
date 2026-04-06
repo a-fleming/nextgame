@@ -1,2 +1,2 @@
-INSERT OR IGNORE INTO sessions (game_id, player_count, duration_minutes, played_on)
+INSERT INTO sessions (game_id, player_count, duration_minutes, played_on)
 VALUES (?, ?, ?, ?);
