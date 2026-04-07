@@ -1,20 +1,21 @@
 import argparse
 
 
-def error_if_tag_options_conflict(args):
+def ensure_tag_options_do_not_conflict(include_tags: list[str]|None, exclude_tags: list[str]|None):
     # prevent same tag in both include/exclude
-    include = set(args.include_tags or [])
-    exclude = set(args.exclude_tags or [])
+    include = set(include_tags or [])
+    exclude = set(exclude_tags or [])
     conflicts = include & exclude
     if conflicts:
-        args.parser.error(f"Tags cannot be both included and excluded: {', '.join(sorted(conflicts))}")
+        raise ValueError(f"Tags cannot be both included and excluded: {', '.join(sorted(conflicts))}")
 
-def error_if_weight_options_conflict(args):
+
+def ensure_weight_options_do_not_conflict(min_weight: float, max_weight: float):
     # prevent minimum weight from being higher than maximum
-    if args.min_weight is None or args.max_weight is None:
+    if min_weight is None or max_weight is None:
         return
-    if args.min_weight > args.max_weight:
-        args.parser.error(f"--min-weight cannot be greater than --max-weight")
+    if min_weight > max_weight:
+        raise ValueError(f"--min-weight cannot be greater than --max-weight")
 
 def is_leap_year(year):
     if year % 4 == 0:

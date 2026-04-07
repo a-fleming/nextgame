@@ -8,7 +8,7 @@ from nextgame.db.queries.game_tags import get_tags_by_game_id
 from nextgame.db.queries.games import get_all_games
 from nextgame.db.queries.sessions import get_total_sessions_and_recent_play_by_game
 from nextgame.db.queries.tags import get_tag_ids_by_names
-from nextgame.validation import error_if_tag_options_conflict, error_if_weight_options_conflict
+from nextgame.validation import ensure_tag_options_do_not_conflict, ensure_weight_options_do_not_conflict
 
 CATEGORY_PERCENTAGES = {  # relative weight percentages of the possible score categories when computing composite score
     "exclude_tags": 20,
@@ -27,8 +27,11 @@ WEIGHT_VALUE_RANGE = MAX_WEIGHT - MIN_WEIGHT
 
 
 def cmd_recommend(args):
-    error_if_tag_options_conflict(args)
-    error_if_weight_options_conflict(args)
+    try:
+        ensure_tag_options_do_not_conflict(args.include_tags, args.exclude_tags)
+        ensure_weight_options_do_not_conflict(args.min_weight, args.max_weight)
+    except ValueError as e:
+        args.parser.error(str(e))
 
     with open_db(args.db_path) as conn:
         # Determine scoring categories
