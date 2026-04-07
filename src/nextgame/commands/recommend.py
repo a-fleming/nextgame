@@ -162,7 +162,7 @@ def compute_total_sessions_score(game_name: str, game_sessions_by_name: dict[str
     if game_name not in game_sessions_by_name:
         return MAX_CATEGORY_POINTS
     total_sessions = game_sessions_by_name[game_name]["total_sessions"]
-    point_deduction = (total_sessions * 100) // total_valid_game_sessions # penalize games proportionately to how often they have been played
+    point_deduction = (total_sessions * 100) / total_valid_game_sessions # penalize games proportionately to how often they have been played
     return max(MAX_CATEGORY_POINTS - point_deduction, 0)  # prevent negative score
 
 def compute_weight_score(game_weight: float, desired_min_weight: float, desired_max_weight: float) -> float:
