@@ -10,7 +10,7 @@ def add_recommend_area(area_parsers, parents=None):
         parents=parents or [],
         help="Recommend games using player count and soft preferences",
         description=(
-            "Recommend games for a specific number of players. "
+            "Recommend games for a specific number of players."
             "Player count is the only hard filter. Other options adjust ranking as soft preferences."
         ),
         epilog="""
