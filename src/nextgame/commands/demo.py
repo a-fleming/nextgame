@@ -1,6 +1,7 @@
 import json
 import logging
 
+from argparse import Namespace
 from importlib.resources import files
 from pathlib import Path
 
@@ -16,7 +17,7 @@ DEMO_DATA_FILE = files("nextgame.data").joinpath("demo_seed.json")
 MARKER_FILE_PATH = db_path = Path.home() / ".nextgame" / "demo_active"
 
 
-def cmd_demo_start(args):
+def cmd_demo_start(_args: Namespace) -> None:
     if not create_marker_file():
         logger.info("Demo mode already enabled")
         print("Demo mode already enabled.")
@@ -54,7 +55,7 @@ def cmd_demo_start(args):
         logger.info(f"Successfully added {len(added_sessions)} session{'' if len(added_sessions) == 1 else 's'}")
     print(f"Demo mode enabled. Using DB: {demo_db_path_str}")
 
-def cmd_demo_stop(args):
+def cmd_demo_stop(_args: Namespace) -> None:
     if not delete_marker_file(): 
         print("Demo mode not enabled")
         logger.info("Demo mode not enabled")

@@ -1,6 +1,8 @@
 import logging
 import sqlite3
 
+from argparse import Namespace
+
 from nextgame.commands.common import open_db
 from nextgame.db.queries.games import add_game, delete_games_by_ids, delete_games_by_names, get_all_games, get_game_id_by_name, get_games_by_criteria
 from nextgame.db.queries.game_tags import apply_tags_if_missing, get_tags_by_game_id, remove_tags_from_game_if_applied
@@ -10,7 +12,7 @@ from nextgame.validation import ensure_tag_options_do_not_conflict, ensure_weigh
 logger = logging.getLogger(__name__)
 
 
-def cmd_game_add(args):
+def cmd_game_add(args: Namespace) -> None:
     est_avg_minutes = estimate_minutes(args.time)
     players_min, players_max = args.players
     with open_db(args.db_path) as conn:
@@ -44,7 +46,7 @@ def cmd_game_add(args):
             success_msg += "\n- " + msg
         print(success_msg)
 
-def cmd_game_delete(args):
+def cmd_game_delete(args: Namespace) -> None:
     if not args.ids and args.names is None:
         return
     with open_db(args.db_path) as conn:
@@ -66,7 +68,7 @@ def cmd_game_delete(args):
                     msg += f"{', '.join([f'{m}' for m in missing])}"  # e.g. "IDs not found: 123, 456, 7890"
         print(msg)
 
-def cmd_game_list(args):
+def cmd_game_list(args: Namespace) -> None:
     with open_db(args.db_path) as conn:
         games = get_all_games(conn)
         game_tags: dict[int, list[str]] = {}  # mapping from game_id to list of tag names
@@ -77,7 +79,7 @@ def cmd_game_list(args):
                 game_tags[game_id] = tags
         print_games_formatted(games, game_tags)
 
-def cmd_game_search(args):
+def cmd_game_search(args: Namespace) -> None:
     try:
         ensure_tag_options_do_not_conflict(args.include_tags, args.exclude_tags)
         ensure_weight_options_do_not_conflict(args.min_weight, args.max_weight)
@@ -111,7 +113,7 @@ def cmd_game_search(args):
         game_tags: dict[int, list[str]] = {}
         print_games_formatted(games, game_tags )
 
-def cmd_game_tag_add(args):
+def cmd_game_tag_add(args: Namespace) -> None:
     if not args.tags:
         return
     with open_db(args.db_path) as conn:
@@ -135,7 +137,7 @@ def cmd_game_tag_add(args):
             success_msg = create_and_apply_tags(conn, game_id, distinct_tags)
             print(success_msg)
 
-def cmd_game_tag_remove(args):
+def cmd_game_tag_remove(args: Namespace) -> None:
     if not args.game or not args.tags:
         return
     

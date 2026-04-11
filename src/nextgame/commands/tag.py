@@ -1,12 +1,14 @@
 import logging
 
+from argparse import Namespace
+
 from nextgame.commands.common import open_db
 from nextgame.db.queries.game_tags import get_uses_by_tag_names, remove_tags_from_all_games
 from nextgame.db.queries.tags import add_tags_if_missing, delete_tags, get_tags
 
 logger = logging.getLogger(__name__)
 
-def cmd_tag_add(args):
+def cmd_tag_add(args: Namespace) -> None:
     with open_db(args.db_path) as conn:
         with conn:
             tags_with_flags = add_tags_if_missing(conn, args.tags)
@@ -25,7 +27,7 @@ def cmd_tag_add(args):
                 msg += f", skipped {len(existing)} (already existed)"
             print(msg)
 
-def cmd_tag_delete(args):
+def cmd_tag_delete(args: Namespace) -> None:
     if not args.tags:
         return
 
@@ -56,7 +58,7 @@ def cmd_tag_delete(args):
                 msg += f" Not found: {', '.join(missing)}"
             print(msg)
 
-def cmd_tag_list(args):
+def cmd_tag_list(args: Namespace) -> None:
     with open_db(args.db_path) as conn:
         with conn:
             tag_names = get_tags(conn)

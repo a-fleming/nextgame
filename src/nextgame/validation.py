@@ -1,7 +1,7 @@
 import argparse
 
 
-def ensure_tag_options_do_not_conflict(include_tags: list[str]|None, exclude_tags: list[str]|None):
+def ensure_tag_options_do_not_conflict(include_tags: list[str] | None, exclude_tags: list[str] | None) -> None:
     # prevent same tag in both include/exclude
     include = set(include_tags or [])
     exclude = set(exclude_tags or [])
@@ -10,14 +10,14 @@ def ensure_tag_options_do_not_conflict(include_tags: list[str]|None, exclude_tag
         raise ValueError(f"Tags cannot be both included and excluded: {', '.join(sorted(conflicts))}")
 
 
-def ensure_weight_options_do_not_conflict(min_weight: float, max_weight: float):
+def ensure_weight_options_do_not_conflict(min_weight: float | None, max_weight: float | None) -> None:
     # prevent minimum weight from being higher than maximum
     if min_weight is None or max_weight is None:
         return
     if min_weight > max_weight:
         raise ValueError(f"--min-weight cannot be greater than --max-weight")
 
-def is_leap_year(year):
+def is_leap_year(year: int) -> bool:
     if year % 4 == 0:
         if year % 100 == 0:
             if year % 400 == 0:
@@ -28,7 +28,7 @@ def is_leap_year(year):
             return True
     return False
 
-def validate_date(value):
+def validate_date(value: str) -> tuple[int, int, int]:
     # YYYY-MM-DD
     sections = value.split("-")
     if len(sections) != 3:
@@ -56,7 +56,7 @@ def validate_date(value):
             raise argparse.ArgumentTypeError(f"'{day_str}' is not a valid day for month '{month_str}' and year '{year_str}'")
     return year, month, day
 
-def validate_float_one_to_five(value):
+def validate_float_one_to_five(value: str) -> float:
     try:
         v = float(value)
         if 1 <= v <= 5:
@@ -65,7 +65,7 @@ def validate_float_one_to_five(value):
         pass
     raise argparse.ArgumentTypeError("must be a number between 1.0 and 5.0")
 
-def validate_game_name(value):
+def validate_game_name(value: str) -> str:
     # strip leading and trailing whitespace
     value = value.strip()
 
@@ -76,7 +76,7 @@ def validate_game_name(value):
     value = " ".join(value.split())
     return value
 
-def validate_game_players(value):
+def validate_game_players(value: str) -> tuple[int, int]:
     sections = value.split("-")
     if len(sections) == 1:
         try:
@@ -103,7 +103,7 @@ def validate_game_players(value):
             raise argparse.ArgumentTypeError("must be a single integer or two integers separated by a dash '-'")
     raise argparse.ArgumentTypeError("range must be in the format <min_players>-<max_players> (e.g. 3-5)")
 	
-def validate_game_time(value):
+def validate_game_time(value: str) -> tuple[int, int]:
     sections = value.split("-")
     if len(sections) == 1:
         try:
@@ -130,7 +130,7 @@ def validate_game_time(value):
             raise argparse.ArgumentTypeError("must be a single integer or two integers separated by a dash '-'")
     raise argparse.ArgumentTypeError("range must be in the format <min_time>-<max_time> (e.g. 60-90)")
 
-def validate_positive_integer(value):
+def validate_positive_integer(value: str) -> int:
     try:
         value = int(value)
         if value > 0:
@@ -139,7 +139,7 @@ def validate_positive_integer(value):
         raise argparse.ArgumentTypeError("must be an integer")
     raise argparse.ArgumentTypeError("must be greater than 0")
 
-def validate_tags(value):
+def validate_tags(value: str) -> str:
     # strip leading and trailing whitespace
     value = value.strip()
 

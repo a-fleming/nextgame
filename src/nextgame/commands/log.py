@@ -1,12 +1,14 @@
 import logging
 
+from argparse import Namespace
+
 from nextgame.commands.common import open_db
 from nextgame.db.queries.games import get_game_by_name
 from nextgame.db.queries.sessions import add_session, get_all_sessions, delete_sessions
 
 logger = logging.getLogger(__name__)
 
-def cmd_log_add(args):
+def cmd_log_add(args: Namespace) -> None:
     if not all([args.game, args.date, args.players, args.time]):
         return
     
@@ -24,7 +26,7 @@ def cmd_log_add(args):
             session_id = add_session(conn, game["game_id"], args.players, args.time, args.date)
         print(f"Logged session. ID: {session_id}")
 
-def cmd_log_delete(args):
+def cmd_log_delete(args: Namespace) -> None:
     if not args.ids:
         return
     with open_db(args.db_path) as conn:
@@ -39,7 +41,7 @@ def cmd_log_delete(args):
             msg += f" Not found: {', '.join(missing)}"
         print(msg)
 
-def cmd_log_list(args):
+def cmd_log_list(args: Namespace) -> None:
     with open_db(args.db_path) as conn:
         sessions = get_all_sessions(conn)
     if not sessions:

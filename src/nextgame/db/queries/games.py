@@ -62,13 +62,13 @@ def get_all_games(conn: sqlite3.Connection) -> list[sqlite3.Row]:
     cur = conn.execute(sql)
     return cur.fetchall()
 
-def get_game_by_name(conn: sqlite3.Connection, name: str) -> sqlite3.Row|None:
+def get_game_by_name(conn: sqlite3.Connection, name: str) -> sqlite3.Row | None:
     sql = load_sql_query(SELECT_GAME_BY_NAME_SQL)
     value = (name,)
     cur = conn.execute(sql, value)
     return cur.fetchone()
 
-def get_game_id_by_name(conn: sqlite3.Connection, name: str) -> int|None:
+def get_game_id_by_name(conn: sqlite3.Connection, name: str) -> int | None:
     sql = load_sql_query(SELECT_GAME_ID_BY_NAME_SQL)
     value = (name,)
 
@@ -84,19 +84,19 @@ def get_game_ids_by_names(conn: sqlite3.Connection, names: list[str]) -> dict[st
     rows = cur.fetchall()
     return {row['name']: row['game_id'] for row in rows}
 
-def get_game_names_by_ids(conn: sqlite3.Connection, names: list[str]) -> dict[int, str]:
+def get_game_names_by_ids(conn: sqlite3.Connection, ids: list[int]) -> dict[int, str]:
     sql = load_sql_query(SELECT_GAME_NAMES_BY_IDS_SQL)
-    sql = populate_in_clause(sql, names)
+    sql = populate_in_clause(sql, ids)
 
-    cur = conn.execute(sql, names)
+    cur = conn.execute(sql, ids)
     rows = cur.fetchall()
     return {row['game_id']: row['name'] for row in rows}
 
 def get_games_by_criteria(conn: sqlite3.Connection,
-                          players: int|None,
-                          duration_minutes: int|None,
-                          min_weight: float|None,
-                          max_weight: float|None,
+                          players: tuple[int, int] | None,
+                          duration_minutes: tuple[int, int] | None,
+                          min_weight: float | None,
+                          max_weight: float | None,
                           incl_tag_ids: list[int],
                           excl_tag_ids: list[int]) -> list[sqlite3.Row]:
     # Remove duplicates

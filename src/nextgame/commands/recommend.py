@@ -1,6 +1,7 @@
 import math
 import sqlite3
 
+from argparse import Namespace
 from datetime import date
 
 from nextgame.commands.common import open_db
@@ -26,7 +27,7 @@ MIN_WEIGHT = 1.0  # minimum possible game weight
 WEIGHT_VALUE_RANGE = MAX_WEIGHT - MIN_WEIGHT
 
 
-def cmd_recommend(args):
+def cmd_recommend(args: Namespace) -> None:
     try:
         ensure_tag_options_do_not_conflict(args.include_tags, args.exclude_tags)
         ensure_weight_options_do_not_conflict(args.min_weight, args.max_weight)
@@ -168,7 +169,7 @@ def compute_total_sessions_score(game_name: str, game_sessions_by_name: dict[str
     point_deduction = (total_sessions * 100) / total_valid_game_sessions # penalize games proportionately to how often they have been played
     return max(MAX_CATEGORY_POINTS - point_deduction, 0)  # prevent negative score
 
-def compute_weight_score(game_weight: float, desired_min_weight: float, desired_max_weight: float) -> float:
+def compute_weight_score(game_weight: float | None, desired_min_weight: float | None, desired_max_weight: float | None) -> float:
     if game_weight is None:
         # Score for unknown weight is based on how much of the possible weight range is taken up by the desired range
         if desired_min_weight and desired_max_weight:
