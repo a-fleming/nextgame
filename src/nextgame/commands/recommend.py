@@ -1,3 +1,5 @@
+"""Recommendation command and scoring helpers."""
+
 import math
 import sqlite3
 
@@ -28,6 +30,7 @@ WEIGHT_VALUE_RANGE = MAX_WEIGHT - MIN_WEIGHT
 
 
 def cmd_recommend(args: Namespace) -> None:
+    """Rank games for a player count using a few soft preference signals."""
     try:
         ensure_tag_options_do_not_conflict(args.include_tags, args.exclude_tags)
         ensure_weight_options_do_not_conflict(args.min_weight, args.max_weight)
@@ -35,8 +38,9 @@ def cmd_recommend(args: Namespace) -> None:
         args.parser.error(str(e))
 
     with open_db(args.db_path) as conn:
-        # Determine scoring categories
-        score_categories = ["last_played_on", "total_sessions"]  # always used for scoring
+        # Score on session related categories and categories the user actually asked about.
+        # Player count is handled separately as a hard filter.
+        score_categories = ["last_played_on", "total_sessions"]
         if args.time:
             score_categories.append("time")
         if args.max_weight or args.min_weight:
@@ -63,16 +67,19 @@ def cmd_recommend(args: Namespace) -> None:
             )
 
         all_games: list[sqlite3.Row] = get_all_games(conn)
-        game_tags_by_name: dict[str, dict[str, int]] = {}  # mapping from game name to dict of tag names to IDs
+        game_tags_by_name: dict[str, dict[str, int]] = {}  # game name -> {tag_name: tag_id}
         game_sessions_by_name: dict[str, dict] = get_total_sessions_and_recent_play_by_game(conn)  # mapping from game names to dict of session counts and recent plays
         valid_games = filter_games_by_players(all_games, args.players)
-        valid_game_names = [g['name'] for g in valid_games]
-        total_valid_game_sessions = sum([vals["total_sessions"] for name, vals in game_sessions_by_name.items() if name in valid_game_names])
         if not valid_games:
             print(f"No games found for {args.players} players")
             return
+        valid_game_names = [g['name'] for g in valid_games]
+        # Total plays only counts games that survived the player-count filter.
+        # That keeps any session penalties tied to the games the user can
+        # actually play tonight.
+        total_valid_game_sessions = sum([vals["total_sessions"] for name, vals in game_sessions_by_name.items() if name in valid_game_names])
         
-        game_scores: dict[str, dict[str, float]] = {}  # mapping from game names to dictionary of score categories to score
+        game_scores: dict[str, dict[str, float]] = {}  # mapping from game name to a dictionary of its scores, by category name
         for game in valid_games:
             score = {}
             game_id = game["game_id"]
@@ -109,6 +116,7 @@ def cmd_recommend(args: Namespace) -> None:
         print(f"{idx}. '{game_name}' ({game_scores[game_name]["composite"]:0.2f}% match)")
 
 def compute_composite_score(game_score: dict[str, float], score_categories: list[str]) -> float:
+    """Blend the active category scores into a weighted average."""
     total_score = 0
     total_percents = 0
     for category in score_categories:
@@ -118,7 +126,7 @@ def compute_composite_score(game_score: dict[str, float], score_categories: list
     return total_score / total_percents
 
 def compute_exclude_tags_score(game_tag_set: set[str], unwanted_tags: list[str]) -> float:
-    # Remove points for each unwanted tag that is included
+    """Penalize games for every unwanted tag they still have."""
     excl_tag_set = set(unwanted_tags)
     unwanted_but_have = excl_tag_set & game_tag_set
 
@@ -127,7 +135,7 @@ def compute_exclude_tags_score(game_tag_set: set[str], unwanted_tags: list[str])
     return max(MAX_CATEGORY_POINTS - point_deduction, 0)  # prevent negative score
 
 def compute_include_tags_score(game_tag_set: set[str], wanted_tags: list[str]) -> float:
-    # Remove points for each wanted tag that is missing
+    """Penalize games for every requested tag they are missing."""
     incl_tag_set = set(wanted_tags)
     wanted_but_missing = incl_tag_set - game_tag_set
     points_per_tag = MAX_CATEGORY_POINTS / len(incl_tag_set)
@@ -135,6 +143,7 @@ def compute_include_tags_score(game_tag_set: set[str], wanted_tags: list[str]) -
     return max(MAX_CATEGORY_POINTS - point_deduction, 0)  # prevent negative score
 
 def compute_last_played_on_score(game_name: str, game_sessions_by_name: dict[str, dict]) -> float:
+    """Favor games that have not been played recently."""
     if game_name not in game_sessions_by_name:
         return MAX_CATEGORY_POINTS
     else:
@@ -143,12 +152,14 @@ def compute_last_played_on_score(game_name: str, game_sessions_by_name: dict[str
         today = date.today()
         days_since_played = (today - date_played).days
         
-        # use exponential decay to penalize recently played games
+        # Penalize recently played games most heavily, with the penalty fading
+        # smoothly over time rather than decreasing by the same amount each day.
         recency_penalty_pct = math.exp(-days_since_played * EXP_DECAY_RATE)
         point_deduction = MAX_CATEGORY_POINTS * recency_penalty_pct
         return max(MAX_CATEGORY_POINTS - point_deduction, 0)  # prevent negative score
 
 def compute_time_score(game_time: int, time_range: tuple[int, int]) -> float:
+    """Score a game's play time against the requested time window."""
     time_lower_limit, time_upper_limit = time_range
     if time_lower_limit <= game_time <= time_upper_limit:
         time_difference = 0
@@ -156,13 +167,16 @@ def compute_time_score(game_time: int, time_range: tuple[int, int]) -> float:
         time_difference = time_lower_limit - game_time
     else: # time_upper_limit < game_time
         time_difference = game_time - time_upper_limit
-        
+    
+    # The upper bound is used as the rough scoring range so smaller preferred
+    # windows stay stricter than big open-ended ones.
     time_value_range = max(time_upper_limit - 1, 1)  # prevent division by 0
     points_per_increment = MAX_CATEGORY_POINTS / time_value_range
     point_deduction = points_per_increment * time_difference
     return max(MAX_CATEGORY_POINTS - point_deduction, 0)  # prevent negative score
 
 def compute_total_sessions_score(game_name: str, game_sessions_by_name: dict[str, dict], total_valid_game_sessions: int) -> float:
+    """Penalize games that have already seen a lot of table time."""
     if game_name not in game_sessions_by_name:
         return MAX_CATEGORY_POINTS
     total_sessions = game_sessions_by_name[game_name]["total_sessions"]
@@ -170,6 +184,12 @@ def compute_total_sessions_score(game_name: str, game_sessions_by_name: dict[str
     return max(MAX_CATEGORY_POINTS - point_deduction, 0)  # prevent negative score
 
 def compute_weight_score(game_weight: float | None, desired_min_weight: float | None, desired_max_weight: float | None) -> float:
+    """Score a game's weight against a preferred minimum/maximum range.
+
+    Unknown weight is treated as uncertain rather than an automatic zero.
+    That keeps unweighted games from getting buried too aggressively while
+    still penalizing them when the requested range is narrow.
+    """
     if game_weight is None:
         # Score for unknown weight is based on how much of the possible weight range is taken up by the desired range
         if desired_min_weight and desired_max_weight:
@@ -202,6 +222,7 @@ def compute_weight_score(game_weight: float | None, desired_min_weight: float | 
     return max(MAX_CATEGORY_POINTS - point_deduction, 0)
 
 def filter_games_by_players(games: list[sqlite3.Row], players: int) -> list[sqlite3.Row]:
+    """Keep only games that support the requested player count."""
     filtered = []
     for game in games:
         min_players = game["min_players"]
@@ -211,6 +232,7 @@ def filter_games_by_players(games: list[sqlite3.Row], players: int) -> list[sqli
     return filtered
 
 def sort_games_by_composite_scores(all_game_scores: dict[str, dict[str, float]]) -> dict[str, dict[str, float]]:
+    """Return the scores dict ordered by composite score descending."""
     def by_composite_score(name_and_scores: tuple[str, dict[str, float]]) -> float:
         _name, scores = name_and_scores
         return scores["composite"]

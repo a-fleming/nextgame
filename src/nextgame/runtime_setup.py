@@ -1,3 +1,5 @@
+"""Runtime logging setup."""
+
 import logging
 
 from pathlib import Path
@@ -5,6 +7,7 @@ from pathlib import Path
 from nextgame.config import Settings
 
 def configure_logging(settings: Settings) -> None:
+    """Configure file-based logging for the CLI process."""
     log_path = Path(settings.log_path).expanduser()
     log_path.parent.mkdir(parents=True, exist_ok=True)
 

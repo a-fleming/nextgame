@@ -1,3 +1,5 @@
+"""Game library commands and formatting helpers."""
+
 import logging
 import sqlite3
 
@@ -13,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 def cmd_game_add(args: Namespace) -> None:
+    """Add a game and optionally attach tags in the same transaction."""
     est_avg_minutes = estimate_minutes(args.time)
     players_min, players_max = args.players
     with open_db(args.db_path) as conn:
@@ -47,13 +50,14 @@ def cmd_game_add(args: Namespace) -> None:
         print(success_msg)
 
 def cmd_game_delete(args: Namespace) -> None:
+    """Delete games by ID or exact name and report misses back to the user."""
     if not args.ids and args.names is None:
         return
     with open_db(args.db_path) as conn:
         with conn:
-            if args.names is not None:  # '--name' flag used
+            if args.names is not None:  # --name flag used
                 games_with_flags = delete_games_by_names(conn, args.names)
-            else: # ID provided; '--name- flag not used
+            else: # ID provided; --name flag not used
                 games_with_flags = delete_games_by_ids(conn, args.ids)
             removed = [name for name, was_removed  in games_with_flags.items() if was_removed]
             missing = [name for name, was_removed  in games_with_flags.items() if not was_removed]
@@ -69,6 +73,7 @@ def cmd_game_delete(args: Namespace) -> None:
         print(msg)
 
 def cmd_game_list(args: Namespace) -> None:
+    """List all games, optionally with their tags."""
     with open_db(args.db_path) as conn:
         games = get_all_games(conn)
         game_tags: dict[int, list[str]] = {}  # mapping from game_id to list of tag names
@@ -80,6 +85,7 @@ def cmd_game_list(args: Namespace) -> None:
         print_games_formatted(games, game_tags)
 
 def cmd_game_search(args: Namespace) -> None:
+    """Search games using hard filters for players, time, weight, and tags."""
     try:
         ensure_tag_options_do_not_conflict(args.include_tags, args.exclude_tags)
         ensure_weight_options_do_not_conflict(args.min_weight, args.max_weight)
@@ -114,6 +120,7 @@ def cmd_game_search(args: Namespace) -> None:
         print_games_formatted(games, game_tags )
 
 def cmd_game_tag_add(args: Namespace) -> None:
+    """Apply one or more tags to an existing game."""
     if not args.tags:
         return
     with open_db(args.db_path) as conn:
@@ -138,6 +145,7 @@ def cmd_game_tag_add(args: Namespace) -> None:
             print(success_msg)
 
 def cmd_game_tag_remove(args: Namespace) -> None:
+    """Remove one or more tags from an existing game."""
     if not args.game or not args.tags:
         return
     
@@ -155,8 +163,8 @@ def cmd_game_tag_remove(args: Namespace) -> None:
                 f"Unknown tag{'' if len(missing) == 1 else 's'}: {', '.join([f'\'{name}\'' for name in sorted(missing)])}. "
             )
         with conn:
-            tags_with_remove_flags = remove_tags_from_game_if_applied(conn, game_id, tags_with_ids)  # e.g. {'coop': True, 'dice rolling': False, 'economic': False}
-            removed = [tag_name for tag_name, was_removed in tags_with_remove_flags.items() if was_removed]  # e.g. ['coop']
+            tags_with_remove_flags = remove_tags_from_game_if_applied(conn, game_id, tags_with_ids)  # e.g. {'cooperative': True, 'dice rolling': False, 'economic': False}
+            removed = [tag_name for tag_name, was_removed in tags_with_remove_flags.items() if was_removed]  # e.g. ['cooperative']
             num_not_removed = len(tags_with_ids) - len(removed)
             if len(removed) == 1:
                 success_msg = f"Removed '{removed[0]}' tag"
@@ -168,10 +176,11 @@ def cmd_game_tag_remove(args: Namespace) -> None:
         print(success_msg)
 
 def create_and_apply_tags(conn: sqlite3.Connection, game_id: int, tags: list[str]) -> str:
+    """Create missing tags and attach them to a game, returning a user message."""
     success_msg = ""
-    tags_with_create_flags = add_tags_if_missing(conn, tags)  # e.g. {'coop': (1, False), 'dice rolling': (2, True), 'economic': (3, True)}
-    tags_with_ids = {name: id for name, (id, _was_added) in tags_with_create_flags.items()}  # e.g. {'coop': 1, 'dice rolling': 2, 'economic': 3}
-    tags_with_apply_flags = apply_tags_if_missing(conn, game_id, tags_with_ids)  # e.g. {'coop': False, 'dice rolling': True, 'economic': True}
+    tags_with_create_flags = add_tags_if_missing(conn, tags)  # e.g. {'cooperative': (1, False), 'dice rolling': (2, True), 'economic': (3, True)}
+    tags_with_ids = {name: id for name, (id, _was_added) in tags_with_create_flags.items()}  # e.g. {'cooperative': 1, 'dice rolling': 2, 'economic': 3}
+    tags_with_apply_flags = apply_tags_if_missing(conn, game_id, tags_with_ids)  # e.g. {'cooperative': False, 'dice rolling': True, 'economic': True}
     applied = [tag_name for tag_name, was_applied in tags_with_apply_flags.items() if was_applied]  # e.g. ['dice rolling', 'economic']
     num_not_applied = len(tags_with_ids) - len(applied)
     if len(applied) == 1:
@@ -184,10 +193,12 @@ def create_and_apply_tags(conn: sqlite3.Connection, game_id: int, tags: list[str
     return success_msg
 
 def estimate_minutes(time_range: tuple[int, int]) -> int:
+    """Collapse a validated time range down to a single stored estimate."""
     low, high = time_range
     return round((low + high) / 2)
 
 def print_games_formatted(games: list[sqlite3.Row], tags: dict[int, list[str]]) -> None:
+    """Print games in a compact table without pulling in a formatting library."""
     if not games:
         print("No games found")
         return
@@ -212,7 +223,8 @@ def print_games_formatted(games: list[sqlite3.Row], tags: dict[int, list[str]]) 
     players_strs = []  # List to keep track of the combined player strings
     tag_strs = []  # List to keep track of the joined tags
 
-    # Determine column widths based on the longest item in each column (including headings)
+    # Precompute widths first so the table stays lined up even with long names
+    # or long tag lists.
     column_widths = {h: len(column_headings[h]) for h in column_keys}
     for game in games:
         game_id = game["game_id"]

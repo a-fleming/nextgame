@@ -1,3 +1,5 @@
+"""Session logging commands and formatting helpers."""
+
 import logging
 
 from argparse import Namespace
@@ -9,12 +11,12 @@ from nextgame.db.queries.sessions import add_session, get_all_sessions, delete_s
 logger = logging.getLogger(__name__)
 
 def cmd_log_add(args: Namespace) -> None:
+    """Add a session after validating the game and player count."""
     if not all([args.game, args.date, args.players, args.time]):
         return
     
     with open_db(args.db_path) as conn:
         with conn:
-            # Validate specified game
             game = get_game_by_name(conn, args.game)
             if not game:
                 args.parser.error(f"Unknown game specified: '{args.game}'.")
@@ -27,6 +29,7 @@ def cmd_log_add(args: Namespace) -> None:
         print(f"Logged session. ID: {session_id}")
 
 def cmd_log_delete(args: Namespace) -> None:
+    """Delete one or more sessions by ID."""
     if not args.ids:
         return
     with open_db(args.db_path) as conn:
@@ -42,6 +45,7 @@ def cmd_log_delete(args: Namespace) -> None:
         print(msg)
 
 def cmd_log_list(args: Namespace) -> None:
+    """List all logged sessions."""
     with open_db(args.db_path) as conn:
         sessions = get_all_sessions(conn)
     if not sessions:
@@ -50,6 +54,7 @@ def cmd_log_list(args: Namespace) -> None:
     print_sessions_formatted(sessions)
 
 def print_sessions_formatted(sessions: dict[int, dict]) -> None:
+    """Print session rows in a compact table."""
     headings = ["ID", "Date", "Game Name", "Minutes", "Players"]
     column_widths = [len(h) for h in headings]
     column_widths[1] = 10  # dates are standardized

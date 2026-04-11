@@ -1,3 +1,5 @@
+"""Helpers for applying SQL schema migrations."""
+
 import logging
 import sqlite3
 
@@ -6,10 +8,12 @@ from importlib.resources.abc import Traversable
 logger = logging.getLogger(__name__)
 
 def applied_versions(conn: sqlite3.Connection) -> set[str]:
+    """Return the set of migration versions already recorded in the DB."""
     cur = conn.execute("SELECT version FROM schema_migrations;")
     return {row["version"] for row in cur.fetchall()}
 
 def apply_migrations(conn: sqlite3.Connection, migrations_dir: Traversable) -> list[str]:
+    """Apply any migrations that have not been recorded yet."""
     logger.debug("apply_migrations() called with migrations_dir=%r", migrations_dir)
     ensure_migrations_table(conn)
     done = applied_versions(conn)
@@ -24,10 +28,9 @@ def apply_migrations(conn: sqlite3.Connection, migrations_dir: Traversable) -> l
             continue
         sql = file.read_text(encoding="utf-8")
 
-        # One transaction per migration file:
-        # - apply migration and record version atomically
-        # - if a migration fails, it is rolled back
-        # - exception stops the loop; remaining migrations are not executed
+        # Keep each migration atomic so the SQL changes and version insert
+        # succeed together or roll back together. If one migration fails, stop
+        # before applying any later files.
         with conn:
             conn.executescript(sql)
             conn.execute(
@@ -39,6 +42,7 @@ def apply_migrations(conn: sqlite3.Connection, migrations_dir: Traversable) -> l
     return applied
 
 def ensure_migrations_table(conn: sqlite3.Connection) -> None:
+    """Create the migrations bookkeeping table if it does not exist yet."""
     logger.info("Ensuring schema_migrations table exists")
     conn.execute("""
         CREATE TABLE IF NOT EXISTS schema_migrations (
@@ -48,6 +52,7 @@ def ensure_migrations_table(conn: sqlite3.Connection) -> None:
     """)
 
 def find_sql(migrations_dir: Traversable) -> list[Traversable]:
+    """Return all SQL files under the migrations directory in filename order."""
     # Migration file names like 001_init.sql, 002_add_x.sql
     out: list[Traversable] = []
     for entry in migrations_dir.iterdir():

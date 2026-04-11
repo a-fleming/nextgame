@@ -1,3 +1,5 @@
+"""Shared helpers for loading SQL files and filling simple placeholders."""
+
 from importlib.resources import files
 from importlib.resources.abc import Traversable
 from pathlib import Path
@@ -8,6 +10,7 @@ WHERE_CLAUSE_PLACEHOLDER = "__WHERE_CLAUSE__"
 
 
 def load_sql_query(relative_path: Path | str) -> str:
+    """Load a SQL query file relative to `nextgame.db.sql.queries`."""
     sql_query_path = files("nextgame.db.sql.queries")
     if isinstance(relative_path, str):
         relative_path = Path(relative_path)
@@ -16,15 +19,20 @@ def load_sql_query(relative_path: Path | str) -> str:
     return load_sql(target_path)
     
 def load_sql(file_path: Traversable) -> str:
+    """Read a SQL file from package data and return it as text."""
     if not file_path.is_file() or not file_path.name.endswith(".sql"):
         raise ValueError(f"{file_path} is not a .sql file")
     return file_path.read_text(encoding="utf-8")
 
 def populate_in_clause(sql: str, items: list[Any]) -> str:
+    """Replace the custom `__IN_CLAUSE__` token with the right placeholders."""
+    # We build the placeholder string in Python because sqlite3 only supports
+    # binding values, not whole lists.
     in_clause = f"({','.join(['?'] * len(items))})"
     return sql.replace(IN_CLAUSE_PLACEHOLDER, in_clause)
 
 def populate_where_clause(sql: str, item_strs: list[str]) -> str:
+    """Replace the custom `__WHERE_CLAUSE__` token with joined conditions."""
     if not item_strs:
         item_strs.append("1=1")  # ensure WHERE clause gets populated
     where_clause = ' AND '.join(item_strs)

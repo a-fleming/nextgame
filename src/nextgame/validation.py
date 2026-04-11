@@ -1,8 +1,14 @@
+"""Validation helpers shared across the CLI.
+
+Most of these are small on purpose. The main job here is to normalize raw
+argparse input and raise clean errors before command handlers have to care.
+"""
+
 import argparse
 
 
 def ensure_tag_options_do_not_conflict(include_tags: list[str] | None, exclude_tags: list[str] | None) -> None:
-    # prevent same tag in both include/exclude
+    """Raise if the same tag shows up in both include and exclude lists."""
     include = set(include_tags or [])
     exclude = set(exclude_tags or [])
     conflicts = include & exclude
@@ -11,13 +17,14 @@ def ensure_tag_options_do_not_conflict(include_tags: list[str] | None, exclude_t
 
 
 def ensure_weight_options_do_not_conflict(min_weight: float | None, max_weight: float | None) -> None:
-    # prevent minimum weight from being higher than maximum
+    """Raise if the requested minimum weight is higher than the maximum."""
     if min_weight is None or max_weight is None:
         return
     if min_weight > max_weight:
         raise ValueError(f"--min-weight cannot be greater than --max-weight")
 
 def is_leap_year(year: int) -> bool:
+    """Return True if the year is a leap year in the Gregorian calendar."""
     if year % 4 == 0:
         if year % 100 == 0:
             if year % 400 == 0:
@@ -29,7 +36,11 @@ def is_leap_year(year: int) -> bool:
     return False
 
 def validate_date(value: str) -> tuple[int, int, int]:
-    # YYYY-MM-DD
+    """Validate a date string and return it as a `(year, month, day)` tuple.
+
+    This accepts single-digit month/day input even though the help text shows
+    `YYYY-MM-DD`. That is mostly a CLI convenience choice.
+    """
     sections = value.split("-")
     if len(sections) != 3:
         raise argparse.ArgumentTypeError("date must be formatted as YYYY-MM-DD")
@@ -57,6 +68,7 @@ def validate_date(value: str) -> tuple[int, int, int]:
     return year, month, day
 
 def validate_float_one_to_five(value: str) -> float:
+    """Validate a numeric weight/rating on the 1.0 to 5.0 scale."""
     try:
         v = float(value)
         if 1 <= v <= 5:
@@ -66,17 +78,20 @@ def validate_float_one_to_five(value: str) -> float:
     raise argparse.ArgumentTypeError("must be a number between 1.0 and 5.0")
 
 def validate_game_name(value: str) -> str:
-    # strip leading and trailing whitespace
+    """Normalize a game name while preserving its visible casing."""
+    # Trim the edges but do not force lowercase. Game names are shown back to
+    # the user later, so preserving their original casing reads better.
     value = value.strip()
 
     if not value:
         raise argparse.ArgumentTypeError("game name cannot be empty")
 
-    # collapse internal whitespace
+    # Collapse extra spaces so lookups and display stay consistent.
     value = " ".join(value.split())
     return value
 
 def validate_game_players(value: str) -> tuple[int, int]:
+    """Validate a player count or player range."""
     sections = value.split("-")
     if len(sections) == 1:
         try:
@@ -104,6 +119,7 @@ def validate_game_players(value: str) -> tuple[int, int]:
     raise argparse.ArgumentTypeError("range must be in the format <min_players>-<max_players> (e.g. 3-5)")
 	
 def validate_game_time(value: str) -> tuple[int, int]:
+    """Validate a play-time value or range in minutes."""
     sections = value.split("-")
     if len(sections) == 1:
         try:
@@ -131,6 +147,7 @@ def validate_game_time(value: str) -> tuple[int, int]:
     raise argparse.ArgumentTypeError("range must be in the format <min_time>-<max_time> (e.g. 60-90)")
 
 def validate_positive_integer(value: str) -> int:
+    """Validate a positive integer value."""
     try:
         value = int(value)
         if value > 0:
@@ -140,12 +157,13 @@ def validate_positive_integer(value: str) -> int:
     raise argparse.ArgumentTypeError("must be greater than 0")
 
 def validate_tags(value: str) -> str:
-    # strip leading and trailing whitespace
+    """Normalize a tag into the lowercase form used throughout the app."""
     value = value.strip()
 
     if not value:
         raise argparse.ArgumentTypeError("tag cannot be empty")
 
-    # collapse internal whitespace
+    # Tags are treated like identifiers, so normalize spacing and casing here
+    # instead of making every caller remember to do it.
     value = " ".join(value.split())
     return value.lower()

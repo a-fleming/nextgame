@@ -1,3 +1,5 @@
+"""Query helpers for game records and game search."""
+
 import sqlite3
 
 from nextgame.db.queries.common import load_sql_query, populate_in_clause, populate_where_clause
@@ -12,6 +14,7 @@ SELECT_GAME_NAMES_BY_IDS_SQL = "games/select_game_names_by_ids.sql"
 SELECT_GAMES_BY_CRITERIA_SQL = "games/select_games_by_criteria.sql"
 
 def add_game(conn: sqlite3.Connection, name: str, players_min: int, players_max: int, est_avg_minutes: int, weight: float) -> int:
+    """Insert a game row and return its new primary key."""
     sql = load_sql_query(INSERT_GAME_SQL)
     values = (name, players_min, players_max, est_avg_minutes, weight)
 
@@ -19,6 +22,7 @@ def add_game(conn: sqlite3.Connection, name: str, players_min: int, players_max:
     return cur.lastrowid
 
 def delete_games_by_ids(conn: sqlite3.Connection, ids: list[int]) -> dict[int, bool]:
+    """Delete games by ID and report which IDs were actually present."""
     if not ids:
         return {}
     ids  = list(dict.fromkeys(ids))  # remove duplicates 
@@ -39,6 +43,7 @@ def delete_games_by_ids(conn: sqlite3.Connection, ids: list[int]) -> dict[int, b
     return existing_with_flag | missing_with_flag
 
 def delete_games_by_names(conn: sqlite3.Connection, names: list[str]) -> dict[str, bool]:
+    """Delete games by exact name and report which names were found."""
     if not names:
         return {}
     names = list(dict.fromkeys(names))  # remove duplicates
@@ -58,17 +63,20 @@ def delete_games_by_names(conn: sqlite3.Connection, names: list[str]) -> dict[st
     return existing_with_flag | missing_with_flag
 
 def get_all_games(conn: sqlite3.Connection) -> list[sqlite3.Row]:
+    """Return all games ordered by name."""
     sql = load_sql_query(SELECT_ALL_GAMES_SQL)
     cur = conn.execute(sql)
     return cur.fetchall()
 
 def get_game_by_name(conn: sqlite3.Connection, name: str) -> sqlite3.Row | None:
+    """Return a single game row by exact name, or `None` if missing."""
     sql = load_sql_query(SELECT_GAME_BY_NAME_SQL)
     value = (name,)
     cur = conn.execute(sql, value)
     return cur.fetchone()
 
 def get_game_id_by_name(conn: sqlite3.Connection, name: str) -> int | None:
+    """Return a game's ID by exact name, or `None` if missing."""
     sql = load_sql_query(SELECT_GAME_ID_BY_NAME_SQL)
     value = (name,)
 
@@ -77,6 +85,7 @@ def get_game_id_by_name(conn: sqlite3.Connection, name: str) -> int | None:
     return res["game_id"] if res is not None else None
 
 def get_game_ids_by_names(conn: sqlite3.Connection, names: list[str]) -> dict[str, int]:
+    """Resolve a batch of exact names to IDs."""
     sql = load_sql_query(SELECT_GAME_IDS_BY_NAMES_SQL)
     sql = populate_in_clause(sql, names)
     
@@ -85,6 +94,7 @@ def get_game_ids_by_names(conn: sqlite3.Connection, names: list[str]) -> dict[st
     return {row['name']: row['game_id'] for row in rows}
 
 def get_game_names_by_ids(conn: sqlite3.Connection, ids: list[int]) -> dict[int, str]:
+    """Resolve a batch of IDs back to names."""
     sql = load_sql_query(SELECT_GAME_NAMES_BY_IDS_SQL)
     sql = populate_in_clause(sql, ids)
 
@@ -99,6 +109,11 @@ def get_games_by_criteria(conn: sqlite3.Connection,
                           max_weight: float | None,
                           incl_tag_ids: list[int],
                           excl_tag_ids: list[int]) -> list[sqlite3.Row]:
+    """Return games that match the requested search filters.
+
+    This powers `game search`, which uses hard filtering instead of the softer
+    scoring approach in `recommend`.
+    """
     # Remove duplicates
     incl_tag_ids = list(dict.fromkeys(incl_tag_ids))
     excl_tag_ids = list(dict.fromkeys(excl_tag_ids))
@@ -108,6 +123,7 @@ def get_games_by_criteria(conn: sqlite3.Connection,
     where_parts = []
     values = []
     if players:
+        # A requested range matches games whose supported range overlaps it.
         player_range_low, player_range_high = players
         players_sql = "min_players <= ? AND ? <= max_players"
         where_parts.append(players_sql)
@@ -115,7 +131,8 @@ def get_games_by_criteria(conn: sqlite3.Connection,
         values.append(player_range_low)   # compare player_range_low <= max_players
     
     if duration_minutes:
-        # Estimated play time in minutes: Single value uses ±20% (minimum ±10 min); MIN-MAX is inclusive
+        # Single time values are treated a little more loosely so users do not
+        # have to guess the exact stored estimate.
         duration_range_low, duration_range_high = duration_minutes
         if duration_range_low == duration_range_high:
             offset = max(10, duration_range_low * 0.2)
@@ -149,7 +166,9 @@ def get_games_by_criteria(conn: sqlite3.Connection,
     return cur.fetchall()
 
 def game_has_tag_placeholder() -> str:
+    """Return the SQL fragment used to require a tag on a game."""
     return "EXISTS (SELECT 1 FROM game_tags gt WHERE gt.game_id = games.id AND gt.tag_id = ?)"
 
 def game_without_tag_placeholder() -> str:
+    """Return the SQL fragment used to exclude a tag from a game."""
     return f"NOT {game_has_tag_placeholder()}"
