@@ -1,7 +1,6 @@
 import sqlite3
 
 from nextgame.db.queries.common import load_sql_query, populate_in_clause
-from nextgame.db.queries.games import get_game_id_by_name
 
 DELETE_SESSIONS_BY_IDS_SQL = "sessions/delete_sessions_by_ids.sql"
 INSERT_SESSION_SQL = "sessions/insert_session.sql"
