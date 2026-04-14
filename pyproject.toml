@@ -1,10 +1,40 @@
 [project]
 name = "nextgame"
-version = "0.1.0"
-description = "a local-first CLI that recommends what to play tonight from your board game library, based on player/time constraints, preferred genres/mechanics, and recent plays."
+version = "0.9.0"
+description = "A local-first CLI for organizing a board game collection, logging plays, and recommending what to play."
 readme = "README.md"
 requires-python = ">=3.12"
+license = { file = "LICENSE.md" }
+authors = [
+    { name = "Aaron Fleming" },
+]
+keywords = [
+    "board-games",
+    "cli",
+    "sqlite",
+    "recommendations",
+    "game-night",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Utilities",
+]
 dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=9.0.2",
+]
+
+[project.urls]
+Homepage = "https://github.com/a-fleming/nextgame"
+Repository = "https://github.com/a-fleming/nextgame"
+Issues = "https://github.com/a-fleming/nextgame/issues"
 
 [project.scripts]
 nextgame = "nextgame.cli:main"
@@ -12,6 +42,19 @@ nextgame = "nextgame.cli:main"
 [build-system]
 requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+nextgame = [
+    "data/*.json",
+    "db/sql/schema/*.sql",
+    "db/sql/queries/*/*.sql",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
 
 [dependency-groups]
 dev = [
