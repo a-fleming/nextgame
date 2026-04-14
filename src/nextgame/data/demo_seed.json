@@ -24,7 +24,6 @@
       "tags": [
         "abstract strategy",
         "renaissance",
-        "chaining",
         "end game bonuses",
         "open drafting",
         "set collection",
@@ -66,16 +65,12 @@
       "tags": [
         "economic",
         "negotiation",
-        "dice rolling",
         "hand management",
-        "hidden victory points",
-        "income",
         "market",
         "race",
         "random production",
         "take that",
-        "trading",
-        "variable set-up"
+        "trading"
       ]
     },
     {
@@ -117,7 +112,6 @@
         "cooperative",
         "hand management",
         "memory",
-        "communication limits",
         "ordering",
         "set collection"
       ]
@@ -130,12 +124,9 @@
       "weight": 1.62,
       "tags": [
         "economic",
-        "auction / bidding",
-        "income",
         "loans",
         "lose a turn",
         "ownership",
-        "player elimination",
         "roll / spin and move",
         "set collection",
         "track movement",
@@ -150,12 +141,9 @@
       "weight": 3.49,
       "tags": [
         "horror",
-        "science fiction",
         "cooperative",
         "semi-cooperative",
         "hidden roles",
-        "player elimination",
-        "dice rolling",
         "hand management",
         "variable player powers"
       ]
@@ -210,13 +198,11 @@
       "tags": [
         "trains",
         "connections",
-        "network and route building",
         "contracts",
         "hand management",
         "set collection",
         "end game bonuses",
-        "open drafting",
-        "push your luck"
+        "open drafting"
       ]
     },
     {
