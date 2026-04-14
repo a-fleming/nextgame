@@ -7,7 +7,7 @@ from pathlib import Path
 
 from nextgame.commands.common import open_db
 from nextgame.commands.game import create_and_apply_tags
-from nextgame.db.queries.games import add_game
+from nextgame.db.queries.games import add_game, get_game_id_by_name
 from nextgame.db.queries.sessions import add_session
 
 logger = logging.getLogger(__name__)
@@ -45,12 +45,16 @@ def cmd_demo_start(_args: Namespace) -> None:
         added_sessions = []
         for session in sessions:
             game_name = session["game"]
+            game_id = get_game_id_by_name(conn, game_name)
+            if not game_id:
+                logger.warning(f"Skipping unknown game '{game_name}' from loaded session.")
+                continue
             player_count = session["players"]
             duration_minutes = session["duration_minutes"]
             y, m, d = session["played_on"].split("-")
             played_on = (int(y), int(m), int(d))
             with conn:
-                session_id = add_session(conn, game_name, player_count, duration_minutes, played_on)
+                session_id = add_session(conn, game_id, player_count, duration_minutes, played_on)
             added_sessions.append(str(session_id))
         logger.info(f"Successfully added {len(added_sessions)} session{'' if len(added_sessions) == 1 else 's'}")
     print(f"Demo mode enabled. Using DB: {demo_db_path_str}")
