@@ -96,15 +96,14 @@ examples:
         help="Delete games from the database"
     )
 
-    game_delete_args = game_delete.add_mutually_exclusive_group(required=True)
-    game_delete_args.add_argument(
+    game_delete.add_argument(
         "ids",
         type=validate_positive_integer,
         nargs="*",
         metavar="GAME_ID",
         help="IDs of the games to delete"
     )
-    game_delete_args.add_argument(
+    game_delete.add_argument(
         "--name",
         type=validate_game_name,
         nargs="+",

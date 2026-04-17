@@ -51,8 +51,12 @@ def cmd_game_add(args: Namespace) -> None:
 
 def cmd_game_delete(args: Namespace) -> None:
     """Delete games by ID or exact name and report misses back to the user."""
-    if not args.ids and args.names is None:
-        return
+    has_ids = bool(args.ids)
+    has_names = bool(args.names)
+    if has_ids == has_names:
+        args.parser.error(
+            "Specify either one or more GAME_ID values, or --name with one or more game names."
+        )
     with open_db(args.db_path) as conn:
         with conn:
             if args.names is not None:  # --name flag used
